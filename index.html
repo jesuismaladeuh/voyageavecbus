@@ -317,8 +317,11 @@
         .choice-btn:hover { background: var(--accent); color: white; }
 
         .cards-container { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; overflow-y: auto; max-height: 80vh; }
-        .img-card { background: white; padding: 8px; border-radius: 15px; cursor: pointer; width: 160px; text-align: center; }
-        .img-card img { width: 100%; height: 100px; object-fit: cover; border-radius: 10px; margin-bottom: 5px; }
+        
+        /* MODIFICATION : Taille légèrement réduite pour les cartes */
+        .img-card { background: white; padding: 8px; border-radius: 15px; cursor: pointer; width: 200px; text-align: center; transition: transform 0.2s; }
+        .img-card:hover { transform: translateY(-5px); }
+        .img-card img { width: 100%; height: 130px; object-fit: cover; border-radius: 10px; margin-bottom: 8px; }
 
         @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
         .animate-text { animation: fadeInUp 0.3s ease-out forwards; }
@@ -391,8 +394,8 @@
         const images = {
             bg: {
                 hotel: 'https://cdnb.artstation.com/p/assets/images/images/024/966/621/large/bugra-hekimhan-11.jpg?1584114602',
-                // Remplacement du lien Wix temporaire par un lien stable
-                room: 'https://wsrv.nl/?url=cdnb.artstation.com/p/assets/images/images/005/028/055/large/randy-vargas-vargas-hotelroom-night-02.jpg',
+                // Remplacement du lien Wix temporaire par une URL stable via proxy
+                room: 'https://i.postimg.cc/vZzWtCLx/hotel-room-2-vn-background-by-drechenaux-dg8gg71-pre.jpg',
                 bath: 'https://img.stablecog.com/insecure/1920w/aHR0cHM6Ly9iLnN0YWJsZWNvZy5jb20vYzBiYmFkMWEtMzAyNC00MDhmLWFjMzAtNTFlNDQxMDQ5MmNmLmpwZWc.webp',
                 dinner: 'https://itadakimasuanime.wordpress.com/wp-content/uploads/2014/06/hiyashi-chuuka-garden-of-words.png',
                 guadeloupe: 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/45e4fd55-3826-47bc-92a9-056d32305a49/dkrmcnp-7092ad55-7e29-4f97-b6d7-1642e6b817c1.jpg/v1/fill/w_1920,h_1077,q_75,strp/anime_style_forest__bathed_in_ethereal_sunlight_by_infinitewallpaper_dkrmcnp-fullview.jpg',
@@ -565,7 +568,7 @@
             { id: 'a5_5', bg: images.bg.room, speaker: 'Jung', text: "Oh, donc trois personnes vont dormir dans le même lit.", chars: ['Jung', 'AA'], next: 'a5_6' },
             { id: 'a5_6', bg: images.bg.room, speaker: 'AA', text: "Séraphin, puisque tu es notre invité spécial, avec qui veux-tu partager ton lit ?", chars: ['AA'], next: 'a5_choice' },
             { id: 'a5_choice', bg: images.bg.room, speaker: 'Séraphin', text: "Avec qui dormir ?", chars: [], choices: [ { text: "Dormir avec Alan et Marckris (Ambiance aventurière)", affinity: { Alan: 1, Marckris: 1 }, next: 'a5_end' }, { text: "Dormir avec Khunpol et Heart (Ambiance calme et sérieuse)", affinity: { Khunpol: 1, Heart: 1 }, next: 'a5_end' }, { text: "Dormir avec Jinwook et Thai (Ambiance relax et rigolote)", affinity: { Jinwook: 1, Thai: 1 }, next: 'a5_end' }, { text: "Dormir avec Nex et Phutatchai (Ambiance élégante et mystérieuse)", affinity: { Nex: 1, Phutatchai: 1 }, next: 'a5_end' }, { text: "Dormir avec Copper et AA (Ambiance dynamique et joyeuse)", affinity: { Copper: 1, AA: 1 }, next: 'a5_end' }, { text: "Dormir avec Jung et Peemwasu (Ambiance douce et cocooning)", affinity: { Jung: 1, Peemwasu: 1 }, next: 'a5_end' } ] },
-            { id: 'a5_end', bg: images.bg.room, speaker: 'Narration', text: "Je m'installe dans le lit choisi. On discute encore un peu à voix basse dans le noir. On parle de nos rêves (ความฝัน), de nos peurs... Je sens que je commence à m'attacher à eux. La nuit est douce à Paris.", chars: [], vocab: [{fr: "Rêve", label: "Le rêve", th: "ความฝัน"}], next: 'a6_start' },
+            { id: 'a5_end', bg: images.bg.room, speaker: 'Narration', text: "Je m'installe dans le lit choisi. On discute encore un peu à voix basse dans le noir. On parle de nos rêves (ความฝัน), de nos peurs... Je sens que je commence à m'attacher à eux. La nuit est douce à Paris.", chars: [], next: 'a6_start' },
 
             // ACTE 6 (Intégral)
             { id: 'a6_start', bg: images.bg.room, speaker: 'Narration', text: "Le lendemain matin, le réveil (นาฬิกาปลุก) sonne à 7h00. C'est difficile. Il y a de la lumière sous les rideaux. J'entends du bruit dans la chambre. C'est l'effervescence !", chars: [], next: 'a6_1' },
@@ -595,7 +598,7 @@
             { id: 'a6_14', bg: images.bg.room, speaker: 'Narration', text: "C'est la panique dans la chambre. Il y a des vêtements partout sur le sol. Des chaussettes, des t-shirts, des pantalons...", chars: [], location: "Paris - Chambre", next: 'a6_15' },
             { id: 'a6_15', bg: images.bg.room, speaker: 'Heart', text: "Où est ma chaussette rouge ? Je ne trouve pas ma chaussette rouge !", chars: ['Heart', 'Marckris'], next: 'a6_16' },
             { id: 'a6_16', bg: images.bg.room, speaker: 'Marckris', text: "Elle est sous le lit, Heart. Regarde bien.", chars: ['Marckris', 'Heart'], next: 'a6_17' },
-            { id: 'a6_17', bg: images.bg.room, speaker: 'Jinwook', text: "Ma valise (กระเป๋าเดินทาง) est trop lourde. Je n'arrive pas à la fermer. Séraphin, tu peux m'aider ?", chars: ['Jinwook'], next: 'a6_18' },
+            { id: 'a6_17', bg: images.bg.room, speaker: 'Jinwook', text: "Ma valise est trop lourde. Je n'arrive pas à la fermer. Séraphin, tu peux m'aider ?", chars: ['Jinwook'], next: 'a6_18' },
             { id: 'a6_18', bg: images.bg.room, speaker: 'Séraphin', text: "Bien sûr. On va s'asseoir dessus. Un, deux, trois !", chars: ['Jinwook'], next: 'a6_19' },
             { id: 'a6_19', bg: images.bg.hotel, speaker: 'Narration', text: "Enfin, les valises sont fermées. Nous descendons dans le hall de l'hôtel. Les taxis sont là. Il pleut un peu à Paris ce matin.", chars: [], location: "Paris - Hall Hôtel", next: 'a6_20' },
             { id: 'a6_20', bg: images.bg.hotel, speaker: 'Jung', text: "Au revoir Paris ! C'était court, mais c'était bien.", chars: ['Jung', 'Peemwasu'], next: 'a6_21' },
