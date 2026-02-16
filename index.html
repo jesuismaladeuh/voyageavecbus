@@ -1,0 +1,985 @@
+
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Destinations Francophones - L'Amour en Voyage</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&family=Pacifico&display=swap" rel="stylesheet">
+    <style>
+        /* --- DESIGN SYSTEM --- */
+        :root {
+            --primary: #6c5ce7;
+            --accent: #a29bfe;
+            --text-main: #2d3436;
+            --text-highlight: #d63031;
+            --hero-color-start: #e67e22;
+            --hero-color-end: #f39c12;
+            --info-bg: rgba(255, 255, 255, 0.65);
+            --vocab-highlight: #c349db; 
+        }
+
+        .highlight-word { font-weight: 800; color: var(--vocab-highlight) !important; }
+        .thai-word { color: #636e72; font-size: 0.85em; margin-left: 4px; font-family: 'Tahoma', sans-serif; font-weight: normal; }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background: #000;
+            font-family: 'Nunito', sans-serif;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- ORIENTATION LOCK --- */
+        #orientation-lock {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: #2d3436;
+            color: white;
+            z-index: 9999;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        #orientation-lock span {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            animation: rotate-icon 2s infinite ease-in-out;
+        }
+
+        @keyframes rotate-icon {
+            0% { transform: rotate(0deg); }
+            50% { transform: rotate(-90deg); }
+            100% { transform: rotate(0deg); }
+        }
+
+        @media screen and (orientation: portrait) {
+            #orientation-lock { display: flex; }
+            #game-stage { display: none !important; }
+        }
+
+        #game-stage {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background-color: #2d3436;
+            overflow: hidden;
+        }
+
+        /* --- BACKGROUND --- */
+        .bg-layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-size: cover; background-position: center; transition: background-image 0.5s ease-in-out; z-index: 1; }
+        .bg-animate { animation: zoomSlow 20s infinite alternate; }
+        @keyframes zoomSlow { from { transform: scale(1); } to { transform: scale(1.1); } }
+
+        /* --- LAYOUT GRID --- */
+        .layout-grid {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            pointer-events: none;
+        }
+
+        /* ZONE HAUTE (70%) */
+        .top-section {
+            flex: 7; 
+            display: flex;
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .col-left {
+            flex: 0 0 20%; 
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 20px;
+        }
+
+        .col-center {
+            flex: 0 0 50%; 
+            display: flex;
+            justify-content: center; 
+            align-items: flex-end; 
+            position: relative;
+            padding-bottom: 12vh; 
+        }
+
+        .col-right {
+            flex: 0 0 30%; 
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding-top: 20px;
+            gap: 15px;
+            padding-right: 20px;
+        }
+
+        /* ZONE BASSE (30%) */
+        .bottom-section {
+            flex: 3;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            padding-bottom: 20px;
+            pointer-events: auto;
+        }
+
+        /* --- COMPONENTS --- */
+        .control-btn {
+            pointer-events: auto;
+            background: rgba(255, 255, 255, 0.3);
+            border: 2px solid white;
+            color: white;
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            display: none;
+            justify-content: center; align-items: center;
+            font-size: 1.5rem;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            transition: transform 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        .control-btn:hover { background: rgba(255, 255, 255, 0.5); transform: scale(1.1); }
+
+        /* Container Personnages */
+        .char-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end; 
+            gap: 10px;
+            width: 100%;
+            height: 100%;
+        }
+
+        .char-sprite, .dish-sprite {
+            height: auto;
+            max-height: 85%; 
+            max-width: 32%; 
+            object-fit: contain;
+            border-radius: 20px;
+            border: 3px solid white;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.4);
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.4s ease;
+            transform-origin: bottom center;
+        }
+
+        .char-sprite.active, .dish-sprite.active { opacity: 1; transform: translateY(0); }
+        
+        .char-sprite.speaking, .dish-sprite.active { 
+            transform: scale(1.08) translateY(-5px); 
+            border-color: var(--primary);
+            box-shadow: 0 0 20px var(--accent);
+            z-index: 10;
+        }
+
+        /* Infos */
+        .info-wrapper { width: 90%; max-width: 280px; display: flex; flex-direction: column; gap: 12px; }
+
+        .location-box {
+            background: var(--info-bg);
+            padding: 12px 15px;
+            border-radius: 15px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            font-weight: 700;
+            color: var(--primary);
+            font-size: 1.1rem;
+            text-align: center;
+            backdrop-filter: blur(5px);
+            border: 2px solid white;
+        }
+
+        .vocab-box {
+            background: var(--info-bg); 
+            padding: 12px;
+            border-radius: 15px;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            backdrop-filter: blur(5px);
+            border: 2px solid white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            min-height: 220px; 
+            overflow: hidden;
+        }
+
+        .vocab-title {
+            font-family: 'Pacifico', cursive;
+            color: var(--primary);
+            margin-bottom: 5px;
+            text-align: center;
+            font-size: 1.2rem;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            padding-bottom: 3px;
+            flex-shrink: 0;
+        }
+
+        .vocab-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .vocab-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding: 3px 0;
+            border-bottom: 1px dashed rgba(0,0,0,0.1);
+        }
+        .vocab-item.new { animation: slideIn 0.4s ease; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(10px); } to { opacity: 1; transform: translateX(0); } }
+
+        .vocab-item:last-child { border-bottom: none; }
+        .vocab-word { font-weight: 700; color: #c349db; flex: 1; text-align: left; line-height: 1.1; word-wrap: break-word; }
+        .vocab-thai { color: var(--text-main); font-family: 'Tahoma', sans-serif; font-size: 0.85rem; text-align: right; max-width: 45%; }
+
+
+        /* Dialogue */
+        .dialogue-box {
+            pointer-events: auto;
+            background: rgba(255, 255, 255, 0.85);
+            width: 90%;
+            max-width: 900px;
+            height: 100%; 
+            border-radius: 20px;
+            box-shadow: 0 -5px 30px rgba(0,0,0,0.15);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            border: 2px solid rgba(255,255,255,0.8);
+            backdrop-filter: blur(15px);
+        }
+
+        .name-badge {
+            position: absolute; top: -18px; left: 25px; 
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe); color: white; 
+            padding: 6px 20px; border-radius: 20px; 
+            font-weight: 700; font-size: 1rem; 
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2); 
+            z-index: 20; text-transform: uppercase; letter-spacing: 1px; 
+            transition: all 0.3s ease;
+        }
+        .name-badge.right-aligned { left: auto; right: 25px; }
+
+        .text-content {
+            padding: 30px 30px 15px 30px;
+            font-size: clamp(1.3rem, 2.8vh, 1.7rem);
+            line-height: 1.4;
+            color: var(--text-main);
+            height: 100%;
+            overflow-y: auto;
+        }
+        
+        .next-btn { 
+            position: absolute; bottom: 15px; right: 20px; 
+            width: 40px; height: 40px; 
+            background: var(--primary); border-radius: 50%; 
+            display: flex; justify-content: center; align-items: center; 
+            color: white; cursor: pointer; animation: pulse 1.5s infinite; 
+        }
+
+        /* Choice Overlay */
+        .choice-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(45, 52, 54, 0.95);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            pointer-events: auto;
+            padding: 20px;
+        }
+
+        .name-input { padding: 15px; font-size: 1.3rem; border-radius: 50px; border: none; width: 80%; max-width: 400px; text-align: center; margin-bottom: 20px; }
+        .choice-btn { background: white; border: none; padding: 12px 25px; width: 100%; max-width: 500px; border-radius: 50px; font-family: 'Nunito', sans-serif; font-size: 1.2rem; font-weight: 700; color: var(--text-main); cursor: pointer; transition: transform 0.1s; box-shadow: 0 4px 0 #dfe6e9; }
+        .choice-btn:active { transform: translateY(4px); box-shadow: none; }
+        .choice-btn:hover { background: var(--accent); color: white; }
+
+        .cards-container { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; overflow-y: auto; max-height: 80vh; }
+        .img-card { background: white; padding: 8px; border-radius: 15px; cursor: pointer; width: 160px; text-align: center; }
+        .img-card img { width: 100%; height: 100px; object-fit: cover; border-radius: 10px; margin-bottom: 5px; }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        .animate-text { animation: fadeInUp 0.3s ease-out forwards; }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 768px) {
+            .col-left { flex: 0 0 15%; padding-top: 10px; }
+            .col-center { flex: 0 0 85%; align-items: flex-end; padding-bottom: 5px; }
+            .col-right { display: none; }
+            .dialogue-box { width: 98%; height: 98%; }
+            .text-content { font-size: 1.1rem; padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="orientation-lock">
+        <span>🔄</span>
+        <p>Veuillez tourner votre appareil en mode paysage.</p>
+    </div>
+
+    <div id="game-stage">
+        <div id="bg" class="bg-layer bg-animate"></div>
+
+        <div class="layout-grid">
+            
+            <div class="top-section">
+                <!-- GAUCHE -->
+                <div class="col-left">
+                    <button id="back-btn" class="control-btn" onclick="goBack()" title="Retour">↩</button>
+                </div>
+
+                <!-- CENTRE -->
+                <div class="col-center">
+                    <div id="chars" class="char-container">
+                        <!-- JS -->
+                    </div>
+                </div>
+
+                <!-- DROITE -->
+                <div class="col-right">
+                    <div class="info-wrapper">
+                        <div id="location-display" class="location-box">📍 Paris - Hôtel</div>
+                        <div id="vocab-display" class="vocab-box">
+                            <div class="vocab-title">Vocabulaire</div>
+                            <ul id="vocab-list" class="vocab-list">
+                                <!-- JS -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- BAS -->
+            <div class="bottom-section">
+                <div id="dialogue-panel" class="dialogue-box" onclick="nextStep()">
+                    <div id="name-tag" class="name-badge">Narrateur</div>
+                    <div id="dialogue-text" class="text-content">Chargement de l'aventure...</div>
+                    <div class="next-btn">➤</div>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="choice-screen" class="choice-overlay"></div>
+    </div>
+
+    <script>
+        // --- ASSETS ---
+        const images = {
+            bg: {
+                hotel: 'https://cdnb.artstation.com/p/assets/images/images/024/966/621/large/bugra-hekimhan-11.jpg?1584114602',
+                room: 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/559465cb-2c06-4177-a5ce-dee4c6409ce6/dg8gg71-eed3499d-bd75-4bce-bce6-140f4053295e.png/v1/fill/w_1280,h_718,q_80,strp/hotel_room_2_vn_background_by_drechenaux_dg8gg71-fullview.jpg',
+                bath: 'https://img.stablecog.com/insecure/1920w/aHR0cHM6Ly9iLnN0YWJsZWNvZy5jb20vYzBiYmFkMWEtMzAyNC00MDhmLWFjMzAtNTFlNDQxMDQ5MmNmLmpwZWc.webp',
+                dinner: 'https://itadakimasuanime.wordpress.com/wp-content/uploads/2014/06/hiyashi-chuuka-garden-of-words.png',
+                guadeloupe: 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/45e4fd55-3826-47bc-92a9-056d32305a49/dkrmcnp-7092ad55-7e29-4f97-b6d7-1642e6b817c1.jpg/v1/fill/w_1920,h_1077,q_75,strp/anime_style_forest__bathed_in_ethereal_sunlight_by_infinitewallpaper_dkrmcnp-fullview.jpg',
+                stpierre: 'https://images2.alphacoders.com/108/thumb-1920-1083131.jpg',
+                tahiti: 'https://image.lexica.art/full_webp/d0d8f048-c687-4024-aee1-a03c1ec1f498',
+                pool: 'https://5.imimg.com/data5/SELLER/Default/2023/12/372469876/BB/MK/JF/1036556/swimming-pool-design.jpg',
+                gym: 'https://imgcdn.stablediffusionweb.com/2024/12/6/14f3682a-6081-4186-b44e-77df8bb6880a.jpg',
+                resto: 'https://static.vecteezy.com/ti/vecteur-libre/p1/6187694-vector-cartoon-style-flat-illustration-of-restaurant-interior-with-showcases-caissier-and-dining-tables-with-menu-stand-vectoriel.jpg'
+            },
+            dishes: {
+                yassa: 'https://www.simplyrecipes.com/thmb/82a9tCHi-WLM5_b1GsMCSf2QoRw=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/Simply-Recipes-Chicken-Yassa-LEAD-08-7acd905640ca4a42b823620c57379a13.jpg',
+                accras: 'https://chefairfryer.fr/wp-content/uploads/2025/02/Recette-des-accras-de-morue-au-Airfryer.webp',
+                rougail: 'https://cuisinons-tous.com/wp-content/uploads/2024/02/recette-Rougail-saucisses-anillais--jpg.webp',
+                poutine: 'https://img.fourchette-et-bikini.fr/1200x675/2025/06/24/i227151-poutine.webp',
+                ndole: 'https://lesepicesdumboa.com/wp-content/uploads/2023/12/maxresdefault-jpg.webp',
+                poisson: 'https://www.tahititourisme.fr/app/uploads/iris-images/5305/poisson-cru-cocoa-gregoire-le-bacon-1-1920x1080-f50_50.webp',
+                canard: 'https://images.radio-canada.ca/v1/alimentation/recette/16x9/magrets-canard-pommes-terre-salardaise.jpg',
+                tiep: 'https://s3-eu-west-1.amazonaws.com/images-ca-1-0-1-eu/recipe_photos/original/232810/Thieboudiene_ou_tieboudien_ou_tiep_bou_dien.jpg',
+                galette: 'https://www.produits-laitiers.com/app/uploads/2019/04/20691_Kig-Ha-Farz-07022013_U4B5510.jpg',
+                crepes: 'https://www.recettes.com/wp-content/uploads/2025/05/crepes-chocolat-noisette-1024x684.jpg',
+                kouign: 'https://www.ideemiam.com/upload/images/article/768x400/img_2262.jpg',
+                gratin: 'https://img.over-blog-kiwi.com/0/55/20/99/20190923/ob_984727_christophines-en-gratin.JPG'
+            },
+            chars: {
+                AA: 'https://kprofiles.com/wp-content/uploads/2023/08/AAashirakorn-640x800.jpeg',
+                Heart: 'https://kprofiles.com/wp-content/uploads/2023/08/HEARTchuthiwat-640x800.jpeg',
+                Marckris: 'https://kprofiles.com/wp-content/uploads/2023/08/MARCKRIS-640x800.jpeg',
+                Jung: 'https://kprofiles.com/wp-content/uploads/2023/08/JUNGT-640x800.jpeg',
+                Thai: 'https://kprofiles.com/wp-content/uploads/2023/08/THAIchayanon-640x800.jpeg',
+                Nex: 'https://kprofiles.com/wp-content/uploads/2023/08/NEXnattakit-640x800.jpeg',
+                Peemwasu: 'https://kprofiles.com/wp-content/uploads/2023/08/PEEMWASU-1-640x800.jpeg',
+                Copper: 'https://kprofiles.com/wp-content/uploads/2023/08/COPPERdechawat-640x800.jpeg',
+                Alan: 'https://kprofiles.com/wp-content/uploads/2023/08/ALANpasawee-640x800.jpeg',
+                Khunpol: 'https://kprofiles.com/wp-content/uploads/2023/08/KHUNPOL-640x800.jpeg',
+                Jinwook: 'https://kprofiles.com/wp-content/uploads/2023/08/JINWOOKkim-640x800.jpeg',
+                Phutatchai: 'https://kprofiles.com/wp-content/uploads/2023/08/PHUTATCHAI-640x800.jpeg',
+                Seraphin: 'https://placehold.co/300x600/2d3436/FFFFFF?text=Seraphin'
+            }
+        };
+
+        let state = { currentId: 'start', affinity: {}, route: null, playerName: "Séraphin", currentLocation: "Paris - Hôtel", vocabHistory: [] };
+        let historyStack = [];
+        Object.keys(images.chars).forEach(c => state.affinity[c] = 0);
+
+        const script = [
+            // ACTE 1
+            { id: 'start', bg: images.bg.hotel, speaker: 'Narration', text: "Le couloir de l'hôtel est très long. Le tapis est rouge et les murs sont blancs. Je cherche la chambre 402. Soudain, j'entends deux voix devant une porte. Ils ont l'air paniqués.", chars: [], location: "Paris - Couloir", next: 'a1_1' },
+            { id: 'a1_1', bg: images.bg.hotel, speaker: 'AA', text: "Oh non... Heart, regarde-moi ! Je crois que j'ai fait une énorme bêtise. Je ne trouve plus la petite carte magnétique pour ouvrir la chambre !", chars: ['AA', 'Heart'], next: 'a1_2' },
+            { id: 'a1_2', bg: images.bg.hotel, speaker: 'Heart', text: "(Soupire) Sérieusement, AA ? Tu es incroyable. On doit rejoindre les dix autres membres pour le grand dîner de bienvenue dans trente minutes ! On l'a perdue où ? Réfléchis !", chars: ['AA', 'Heart'], next: 'a1_3' },
+            { id: 'a1_3', bg: images.bg.hotel, speaker: 'AA', text: "Je ne sais pas... Ma tête est comme un ballon de baudruche aujourd'hui. Voyons... Ce matin, je suis allé à la réception. Ensuite, je suis allé nager. J'avais mon short de bain bleu avec des fleurs.", chars: ['AA', 'Heart'], next: 'a1_4' },
+            { id: 'a1_4', bg: images.bg.hotel, speaker: 'Heart', text: "Ton short de bain bleu ? Il est vraiment moche, arrête de le porter !", chars: ['AA', 'Heart'], next: 'a1_5' },
+            { id: 'a1_5', bg: images.bg.hotel, speaker: 'AA', text: "Mais, c’est pas le sujet ! Ce qui est important, c’est de trouver cette clé (กุญแจ) !", chars: ['AA', 'Heart'], next: 'a1_choice_1' },
+            
+            { id: 'a1_choice_1', bg: images.bg.hotel, speaker: 'Séraphin', text: "(Vous voyez les deux hommes chercher la clé. Que faites-vous ?)", chars: ['AA', 'Heart'], choices: [ { text: "Euh… Bonjour… Vous avez besoin d’aide ?", next: 'a1_meet' }, { text: "Salut les gars ! J’ai entendu votre conversation, je vais vous aider à trouver votre clé !", next: 'a1_meet' } ] },
+            { id: 'a1_meet', bg: images.bg.hotel, speaker: 'AA', text: "Bonjour ! Moi c’est AA, tu dors dans cet hôtel (โรงแรม) aussi ?", chars: ['AA', 'Heart'], next: 'a1_meet_2' },
+            { id: 'a1_meet_2', bg: images.bg.hotel, speaker: 'Heart', text: "Je m’appelle Heart, tu as entendu notre discussion ?", chars: ['AA', 'Heart'], next: 'a1_ask_name_intro' },
+            { id: 'a1_ask_name_intro', bg: images.bg.hotel, speaker: 'Heart', text: "Au fait, comment tu t'appelles ?", chars: ['AA', 'Heart'], next: 'a1_ask_name_input' },
+            { id: 'a1_ask_name_input', bg: images.bg.hotel, speaker: 'Heart', text: "(Saisissez votre prénom)", chars: ['AA', 'Heart'], type: 'input', next: 'a1_meet_3' },
+            { id: 'a1_meet_3', bg: images.bg.hotel, speaker: 'Séraphin', text: "Bonjour. Oui, je viens d'arriver. Je m'appelle Séraphin. Est-ce que tout va bien ?", chars: ['AA', 'Heart'], next: 'a1_meet_4' },
+            { id: 'a1_meet_4', bg: images.bg.hotel, speaker: 'AA', text: "Pas vraiment, Séraphin ! Je suis AA. J'ai perdu ma clé. Je suis sûr qu'elle est tombée de ma poche quand je suis allé nager cet après-midi ! Mais l'hôtel est très grand...", chars: ['AA', 'Heart'], next: 'a1_meet_5' },
+            { id: 'a1_meet_5', bg: images.bg.hotel, speaker: 'Heart', text: "Alors, Séraphin, tu dois nous aider ! À ton avis, où est notre clé ?", chars: ['AA', 'Heart'], next: 'a1_minigame' },
+
+            { id: 'a1_minigame', bg: images.bg.hotel, speaker: 'Choix du Joueur', text: "Où chercher la clé ?", chars: [], type: 'image', choices: [ { text: 'Restaurant "Le Gourmet"', img: images.bg.resto, next: 'a1_wrong' }, { text: 'Piscine "L\'Océan Bleu"', img: images.bg.pool, next: 'a1_right' }, { text: 'Gymnase "Force et Forme"', img: images.bg.gym, next: 'a1_wrong' } ] },
+            { id: 'a1_wrong', bg: images.bg.hotel, speaker: 'AA', text: "Ah non, je ne pense pas... Je n'ai pas encore mangé aujourd'hui et je n'aime pas trop le sport en salle. Essayons encore !", chars: ['AA', 'Heart'], next: 'a1_minigame' },
+            { id: 'a1_right', bg: images.bg.hotel, speaker: 'AA', text: "Mais oui ! La piscine (สระว่ายน้ำ) ! Je me souviens maintenant, j’ai posé la clé de la chambre sur le bord de la piscine.", chars: ['AA', 'Heart'], next: 'a1_found' },
+            { id: 'a1_found', bg: images.bg.pool, speaker: 'Heart', text: "(Il court et revient) Regarde ! Elle était juste là, près du grand bassin. Merci infiniment, Séraphin. Tu es très observateur.", chars: ['AA', 'Heart'], location: "Paris - Piscine", next: 'a1_hero' },
+            { id: 'a1_hero', bg: images.bg.pool, speaker: 'AA', text: "Tu es notre héros !", chars: ['AA', 'Heart'], next: 'a1_hero_2' },
+            { id: 'a1_hero_2', bg: images.bg.pool, speaker: 'Heart', text: "C’est vrai, tu es très fort !", chars: ['AA', 'Heart'], next: 'a1_response' },
+            { id: 'a1_response', bg: images.bg.pool, speaker: 'Séraphin', text: "...", chars: ['AA', 'Heart'], choices: [ { text: "Mais non, c’était facile !", next: 'a1_invite' }, { text: "Merci, merci !", next: 'a1_invite' } ] },
+            { id: 'a1_invite', bg: images.bg.hotel, speaker: 'AA', text: "On ne peut pas te laisser seul dans le couloir.", chars: ['AA', 'Heart'], location: "Paris - Couloir", next: 'a1_invite_2' },
+            { id: 'a1_invite_2', bg: images.bg.hotel, speaker: 'Heart', text: "Viens avec nous dans la chambre, on va te présenter au reste du groupe BUS. On est 12, mais on est gentils !", chars: ['AA', 'Heart'], next: 'a2_start' },
+
+            // ACTE 2
+            { id: 'a2_start', bg: images.bg.room, speaker: 'Narration', text: "Nous entrons dans une suite royale. C'est magnifique ! Il y a de grandes fenêtres avec vue sur la Tour Eiffel.", chars: ['Marckris', 'Jung', 'Thai'], location: "Paris - Suite Royale", next: 'a2_1' },
+            { id: 'a2_1', bg: images.bg.room, speaker: 'Marckris', text: "Écoutez-moi ! La Guadeloupe, c'est l'aventure parfaite. On peut monter sur le volcan (ภูเขาไฟ) de la Soufrière. Imaginez la vue ! Et l'odeur (กลิ่น) des plantations (ไร่) de canne à sucre (อ้อย)... C'est la nature sauvage !", chars: ['Marckris', 'Jung', 'Thai'], vocab: [{fr: "Volcan", label: "Le volcan", th: "ภูเขาไฟ"}, {fr: "Canne à sucre", label: "La canne à sucre", th: "อ้อย"}, {fr: "Odeur", label: "L'odeur", th: "กลิ่น"}, {fr: "Plantation", label: "La plantation", th: "ไร่"}], next: 'a2_2' },
+            { id: 'a2_2', bg: images.bg.room, speaker: 'Jung', text: "Marckris, il fait trop chaud là-bas. On va transpirer tout le temps. Moi, je préfère Saint-Pierre et Miquelon. C'est au nord, près du Canada. On peut voir des sapins (ต้นสน), de la neige (หิมะ), et peut-être des baleines (วาฬ). C'est romantique et calme.", chars: ['Marckris', 'Jung', 'Thai'], vocab: [{fr: "Neige", label: "La neige", th: "หิมะ"}, {fr: "Baleine", label: "La baleine", th: "วาฬ"}, {fr: "Sapin", label: "Le sapin", th: "ต้นสน"}], next: 'a2_3' },
+            { id: 'a2_3', bg: images.bg.room, speaker: 'Thai', text: "Vous oubliez le plus important : le repos ! À Tahiti, il y a des cocotiers (ต้นมะพร้าว), des plages de sable blanc et des lagons (ทะเลสาบน้ำเค็ม) transparents. On peut nager avec des poissons tropicaux toute la journée.", chars: ['Marckris', 'Jung', 'Thai'], vocab: [{fr: "Cocotier", label: "Le cocotier", th: "ต้นมะพร้าว"}, {fr: "Lagon", label: "Le lagon", th: "ทะเลสาบน้ำเค็ม"}], next: 'a2_4' },
+            { id: 'a2_4', bg: images.bg.room, speaker: 'Marckris', text: "En Guadeloupe aussi on peut nager ! Il y a la célèbre plage Sainte-Anne, on peut aussi y boire du rhum (เหล้ารัม).", chars: ['Marckris', 'Jung', 'Thai'], vocab: [{fr: "Rhum", label: "Le rhum", th: "เหล้ารัม"}], next: 'a2_5' },
+            { id: 'a2_5', bg: images.bg.room, speaker: 'Jung', text: "A Saint-Pierre et Miquelon, il y a des animaux tels que des loups, des phoques (แมวน้ำ) et des dauphins (โลมา). je pense que ce sera génial !", chars: ['Marckris', 'Jung', 'Thai'], vocab: [{fr: "Phoque", label: "Le phoque", th: "แมวน้ำ"}, {fr: "Dauphin", label: "Le dauphin", th: "โลมา"}], next: 'a2_6' },
+            { id: 'a2_6', bg: images.bg.room, speaker: 'Thai', text: "Et à Tahiti, il y a aussi des dauphins, mais aussi des crabes (ปู) et des perroquets (นกแก้ว) !", chars: ['Marckris', 'Jung', 'Thai'], vocab: [{fr: "Crabe", label: "Le crabe", th: "ปู"}, {fr: "Perroquet", label: "Le perroquet", th: "นกแก้ว"}], next: 'a2_7' },
+            { id: 'a2_7', bg: images.bg.room, speaker: 'Jung', text: "Et des moustiques !", chars: ['Marckris', 'Jung', 'Thai'], next: 'a2_8' },
+            { id: 'a2_8', bg: images.bg.room, speaker: 'Marckris', text: "(Il remarque Séraphin) Tiens ? Qui est ce jeune homme élégant avec AA et Heart ?", chars: ['Marckris', 'Jung', 'Thai'], next: 'a2_9' },
+            { id: 'a2_9', bg: images.bg.room, speaker: 'Heart', text: "C'est Séraphin. Il nous a aidés à retrouver la clé de la chambre.", chars: ['Heart', 'Marckris'], next: 'a2_10' },
+            { id: 'a2_10', bg: images.bg.room, speaker: 'AA', text: "Oui, il est très gentil !", chars: ['AA', 'Jung'], next: 'a2_11' },
+            { id: 'a2_11', bg: images.bg.room, speaker: 'Jung', text: "Enchanté, Séraphin !", chars: ['Jung', 'Marckris'], next: 'a2_12' },
+            { id: 'a2_12', bg: images.bg.room, speaker: 'Marckris', text: "Bienvenue, Séraphin ! Moi c'est Marckris. J'adore les oiseaux, surtout les perroquets colorés. Et toi, tu aimes la nature ? Quel est ton animal préféré ?", chars: ['Marckris'], next: 'a2_animal_choice' },
+            { id: 'a2_animal_choice', bg: images.bg.room, speaker: 'Séraphin', text: "Quel est mon animal préféré ?", chars: ['Marckris', 'Jung', 'Thai'], choices: [ { text: "J'adore les animaux marins, comme les dauphins. ", affinity: { Thai: 1 }, next: 'a2_animal_react' }, { text: "Je préfère les animaux de la forêt, comme les renards. ", affinity: { Jung: 1 }, next: 'a2_animal_react' }, { text: "Moi, je préfère les animaux domestiques, comme les chats. ", affinity: { Marckris: 1 }, next: 'a2_animal_react' } ] },
+            { id: 'a2_animal_react', bg: images.bg.room, speaker: 'Thai', text: "C'est un bon choix ! Moi, mon rêve, c'est de voir une tortue marine (เต่าทะเล) géante à Tahiti.", chars: ['Thai', 'Jung'], vocab: [{fr: "Tortue marine", label: "La tortue marine", th: "เต่าทะเล"}], next: 'a2_animal_react_2' },
+            { id: 'a2_animal_react_2', bg: images.bg.room, speaker: 'Jung', text: "Et moi, je veux voir un harfang des neiges (นกเค้าแมวหิมะ) à Saint-Pierre. C'est un oiseau blanc magnifique.", chars: ['Jung', 'AA'], vocab: [{fr: "Harfang des neiges", label: "L'harfang des neiges", th: "นกเค้าแมวหิมะ"}], next: 'a2_paris_choice' },
+            { id: 'a2_paris_choice', bg: images.bg.room, speaker: 'Séraphin', text: "...", chars: ['AA', 'Jung'], choices: [ { text: "On peut voir ces animaux à Paris.", next: 'a2_paris_1' }, { text: "Pour voir ces animaux, il faut aller voyager !", next: 'a2_paris_2' } ] },
+            { id: 'a2_paris_1', bg: images.bg.room, speaker: 'AA', text: "Ah non, je ne pense pas... Je n’en ai jamais vu à Paris…", chars: ['AA', 'Jung'], next: 'a2_paris_1b' },
+            { id: 'a2_paris_1b', bg: images.bg.room, speaker: 'Jung', text: "En effet ! Heureusement, on part en vacances demain !", chars: ['AA', 'Jung'], next: 'a2_toilet' },
+            { id: 'a2_paris_2', bg: images.bg.room, speaker: 'AA', text: "C’est vrai, mais heureusement, on voyage bientôt.", chars: ['AA', 'Jung'], next: 'a2_paris_2b' },
+            { id: 'a2_paris_2b', bg: images.bg.room, speaker: 'Jung', text: "Oui, demain !", chars: ['AA', 'Jung'], next: 'a2_toilet' },
+            { id: 'a2_toilet', bg: images.bg.room, speaker: 'Séraphin', text: "Ah bon, vous voyagez demain ? C’est super ! Excusez-moi, où sont les toilettes ?", chars: [], next: 'a3_start' },
+
+            // ACTE 3
+            { id: 'a3_start', bg: images.bg.bath, speaker: 'Narration', text: "Après toutes ces émotions, j'ai besoin d’aller aux toilettes. On m'indique la salle de bains. J'ouvre la porte, mais... oula ! Il y a beaucoup de vapeur et des rires derrière le rideau de douche. Je vois trois hommes en train de se doucher.", chars: [], location: "Paris - Salle de Bain", next: 'a3_1' },
+            { id: 'a3_1', bg: images.bg.bath, speaker: 'Peemwasu', text: "(Voix joyeuse) Je vous assure, les gars ! L'eau glacée, c'est le secret des stars. C'est excellent pour la circulation et ça donne une peau très douce.", chars: ['Peemwasu', 'Copper', 'Nex'], next: 'a3_2' },
+            { id: 'a3_2', bg: images.bg.bath, speaker: 'Copper', text: "(En grelottant) Tu es fou, Peemwasu ! C'est une torture ! Moi, j'adore l'eau très chaude. Ça détend tous les muscles après une journée de voyage.", chars: ['Peemwasu', 'Copper', 'Nex'], next: 'a3_3' },
+            { id: 'a3_3', bg: images.bg.bath, speaker: 'Nex', text: "Calmez-vous ! Pourquoi choisir ? Moi, je commence par le chaud pour me relaxer, et je finis par le froid pour me réveiller. C'est l'équilibre parfait.", chars: ['Peemwasu', 'Copper', 'Nex'], next: 'a3_4' },
+            { id: 'a3_4', bg: images.bg.bath, speaker: 'Narration', text: "Nex tire brusquement le rideau pour attraper son peignoir (เสื้อคลุมอาบน้ำ). Il s'arrête net en me voyant.", chars: ['Nex'], vocab: [{fr: "Peignoir", label: "Le peignoir", th: "เสื้อคลุมอาบน้ำ"}], next: 'a3_5' },
+            { id: 'a3_5', bg: images.bg.bath, speaker: 'Nex', text: "Oh ! Un nouveau visage dans la buée ! Salut ! Tu es qui ?", chars: ['Nex'], next: 'a3_6' },
+            { id: 'a3_6', bg: images.bg.bath, speaker: 'Séraphin', text: "(Très embarrassé) Oh ! Je suis désolé ! Je cherchais juste le lavabo... Je reviendrai plus tard !", chars: [], next: 'a3_7' },
+            { id: 'a3_7', bg: images.bg.bath, speaker: 'Peemwasu', text: "(Sortant la tête de la douche) Mais non, reste ! On a presque fini. On discute juste de nos rituels de beauté.", chars: ['Peemwasu', 'Nex'], next: 'a3_8' },
+            { id: 'a3_8', bg: images.bg.bath, speaker: 'Nex', text: "Ne sois pas timide, Séraphin. La salle de bains est immense. Tu veux te joindre à nous pour finir la douche ? On a encore plein de savon (สบู่) !", chars: ['Peemwasu', 'Nex', 'Copper'], next: 'a3_9' },
+            { id: 'a3_9', bg: images.bg.bath, speaker: 'Copper', text: "Faut pas être timide, on prend toujours la douche (ฝักบัว) ensemble !", chars: ['Peemwasu', 'Nex', 'Copper'], next: 'a3_choice' },
+            { id: 'a3_choice', bg: images.bg.bath, speaker: 'Séraphin', text: "...", chars: ['Peemwasu', 'Nex', 'Copper'], choices: [ { text: "C'est gentil, mais je vais attendre que vous sortiez... (Prudent)", next: 'a3_refusal' }, { text: "D'accord, l'eau chaude me fera du bien après ce voyage.", affinity: { Nex: 1, Copper: 1 }, next: 'a3_accept_hot' }, { text: "Allez, d'accord ! Je veux essayer l'eau froide avec vous !", affinity: { Peemwasu: 1 }, next: 'a3_accept_cold' } ] },
+            { id: 'a3_refusal', bg: images.bg.bath, speaker: 'Séraphin', text: "Je préfère vous laisser... Je vous retrouve au dîner !", chars: [], next: 'a4_start' },
+            { id: 'a3_accept_hot', bg: images.bg.bath, speaker: 'Séraphin', text: "L'eau chaude, c'est tentant...", chars: ['Peemwasu', 'Nex', 'Copper'], next: 'a3_discussion' },
+            { id: 'a3_accept_cold', bg: images.bg.bath, speaker: 'Séraphin', text: "Soyons fous, l'eau froide !", chars: ['Peemwasu', 'Nex', 'Copper'], next: 'a3_discussion' },
+            { id: 'a3_discussion', bg: images.bg.bath, speaker: 'Nex', text: "Regarde, j'ai un gel douche bio à la verveine. Ça sent le jardin français. Tu veux essayer ?", chars: ['Nex', 'Copper'], next: 'a3_discussion_2' },
+            { id: 'a3_discussion_2', bg: images.bg.bath, speaker: 'Copper', text: "Et moi j'ai une huile de massage à la noix de coco. C'est très hydratant.", chars: ['Copper', 'Peemwasu'], next: 'a3_discussion_3' },
+            { id: 'a3_discussion_3', bg: images.bg.bath, speaker: 'Peemwasu', text: "Séraphin, tu prends soin de toi d'habitude ? Tu as une peau très claire.", chars: ['Peemwasu', 'Nex'], next: 'a3_discussion_4' },
+            { id: 'a3_discussion_4', bg: images.bg.bath, speaker: 'Séraphin', text: "Oh, j'essaie... mais je n'ai pas autant de produits que vous !", chars: [], next: 'a3_discussion_5' },
+            { id: 'a3_discussion_5', bg: images.bg.bath, speaker: 'Nex', text: "(En riant) On va t'apprendre tous nos secrets, ne t'inquiète pas.", chars: ['Nex'], next: 'a4_start' },
+            
+            // ACTE 4 & 5
+            { id: 'a4_start', bg: images.bg.dinner, speaker: 'Narration', text: "C'est l'heure du dîner. Les 13 garçons s'asseyent autour d'une immense table décorée de fleurs. C'est un festin incroyable.", chars: [], location: "Paris - Salle à Manger", next: 'a4_intro' },
+            { id: 'a4_intro', bg: images.bg.dinner, speaker: 'Alan', text: "Silence tout le monde ! Pour fêter l'arrivée de Séraphin, nous avons commandé des spécialités de toute la francophonie. Chaque membre va présenter son plat préféré. Séraphin, on veut ton avis honnête sur chaque assiette !", chars: ['Alan'], next: 'a4_1_pres' },
+            { id: 'a4_1_pres', bg: images.bg.dinner, speaker: 'Alan', text: "Voici le Poulet Yassa. C'est une spécialité du Sénégal. Il y a beaucoup d'oignons caramélisés et du citron (มะนาว) vert. C'est acide et sucré à la fois.", chars: ['Alan'], vocab: [{fr: "Citron", label: "Le citron", th: "มะนาว"}], dish: 'yassa', next: 'a4_1_choice' },
+            { id: 'a4_1_choice', bg: images.bg.dinner, speaker: 'Séraphin', text: "(Que penser du Poulet Yassa ?)", chars: ['Alan'], dish: 'yassa', choices: [ { text: "C'est délicieux, j'adore le citron !", affinity: { Alan: 1 }, next: 'a4_2_pres' }, { text: "C'est un peu trop spécial pour moi.", affinity: { Alan: 0 }, next: 'a4_2_pres' } ]},
+
+            { id: 'a4_2_pres', bg: images.bg.dinner, speaker: 'AA', text: "Goûtez mes Accras de morue. Ce sont des petits beignets de poisson épicés des Antilles. On les mange souvent à l'apéritif.", chars: ['AA'], dish: 'accras', next: 'a4_2_choice' },
+            { id: 'a4_2_choice', bg: images.bg.dinner, speaker: 'Séraphin', text: "(Les accras...)", chars: ['AA'], dish: 'accras', choices: [ { text: "J'adore les plats frits et épicés !", affinity: { AA: 1 }, next: 'a4_3_pres' }, { text: "C'est un peu trop gras à mon goût.", affinity: { AA: 0 }, next: 'a4_3_pres' } ]},
+
+            { id: 'a4_3_pres', bg: images.bg.dinner, speaker: 'Khunpol', text: "Voici le Rougail Saucisse de l'Île de la Réunion. Il y a des saucisses, des tomates, des oignons et du gingembre. Attention, c'est pimenté !", chars: ['Khunpol'], dish: 'rougail', next: 'a4_3_choice' },
+            { id: 'a4_3_choice', bg: images.bg.dinner, speaker: 'Séraphin', text: "(Ça a l'air fort !)", chars: ['Khunpol'], dish: 'rougail', choices: [ { text: "Le piment, c'est la vie !", affinity: { Khunpol: 1 }, next: 'a4_4_pres' }, { text: "Ouh là, j'ai besoin d'un verre d'eau !", affinity: { Khunpol: 0 }, next: 'a4_4_pres' } ]},
+
+            { id: 'a4_4_pres', bg: images.bg.dinner, speaker: 'Heart', text: "Moi, je viens du froid ! Voici la Poutine du Québec. Des frites, du fromage en grains et une sauce brune bien chaude.", chars: ['Heart'], dish: 'poutine', next: 'a4_4_choice' },
+            { id: 'a4_4_choice', bg: images.bg.dinner, speaker: 'Séraphin', text: "(De la poutine ?)", chars: ['Heart'], dish: 'poutine', choices: [ { text: "C'est le plat parfait pour l'hiver !", affinity: { Heart: 1 }, next: 'a4_5_pres' }, { text: "C'est un peu lourd le soir, non ?", affinity: { Heart: 0 }, next: 'a4_5_pres' } ]},
+
+            { id: 'a4_5_pres', bg: images.bg.dinner, speaker: 'Jinwook', text: "Voici le Ndolé du Cameroun. C'est un plat à base de feuilles amères, de noix de terre, de viande et parfois de crevettes.", chars: ['Jinwook'], dish: 'ndole', next: 'a4_5_choice' },
+            { id: 'a4_5_choice', bg: images.bg.dinner, speaker: 'Séraphin', text: "(Du Ndolé...)", chars: ['Jinwook'], dish: 'ndole', choices: [ { text: "C'est une découverte incroyable !", affinity: { Jinwook: 1 }, next: 'a4_6_pres' }, { text: "L'amertume, c'est un peu difficile.", affinity: { Jinwook: 0 }, next: 'a4_6_pres' } ]},
+
+            { id: 'a4_6_pres', bg: images.bg.dinner, speaker: 'Thai', text: "Le Poisson Cru au lait de coco de Tahiti. On utilise du thon frais, du concombre et du citron. C'est très frais.", chars: ['Thai'], vocab: [{fr: "Poisson", label: "Le poisson", th: "ปลา"}], dish: 'poisson', next: 'a4_6_choice' },
+            { id: 'a4_6_choice', bg: images.bg.dinner, speaker: 'Séraphin', text: "(Poisson (ปลา) cru...)", chars: ['Thai'], dish: 'poisson', choices: [ { text: "C'est mon plat préféré, c'est si léger !", affinity: { Thai: 1 }, next: 'a4_7_pres' }, { text: "Je n'aime pas trop le poisson qui n'est pas cuit.", affinity: { Thai: 0 }, next: 'a4_7_pres' } ]},
+
+            { id: 'a4_7_pres', bg: images.bg.dinner, speaker: 'Nex', text: "Un classique de France métropolitaine : le Magret de Canard rôti avec une sauce au miel et aux figues.", chars: ['Nex'], dish: 'canard', next: 'a4_7_choice' },
+            { id: 'a4_7_choice', bg: images.bg.dinner, speaker: 'Séraphin', text: "(Canard sucré-salé ?)", chars: ['Nex'], dish: 'canard', choices: [ { text: "Le mélange sucré-salé est parfait !", affinity: { Nex: 1 }, next: 'a4_8_pres' }, { text: "Je préfère les viandes plus simples.", affinity: { Nex: 0 }, next: 'a4_8_pres' } ]},
+
+            { id: 'a4_8_pres', bg: images.bg.dinner, speaker: 'Phutatchai', text: "Le Tiep Bou Dien, le plat national du Sénégal. C'est du riz rouge cuit avec du poisson, des carottes et du manioc.", chars: ['Phutatchai'], dish: 'tiep', next: 'a4_8_choice' },
+            { id: 'a4_8_choice', bg: images.bg.dinner, speaker: 'Séraphin', text: "(Tiep Bou Dien...)", chars: ['Phutatchai'], dish: 'tiep', choices: [ { text: "C'est très complet et coloré, j'adore !", affinity: { Phutatchai: 1 }, next: 'a4_9_pres' }, { text: "Il y a trop de légumes pour moi.", affinity: { Phutatchai: 0 }, next: 'a4_9_pres' } ]},
+
+            { id: 'a4_9_pres', bg: images.bg.dinner, speaker: 'Copper', text: "Directement de Bretagne : la Galette-Saucisse. C'est une crêpe de sarrasin qui entoure une saucisse grillée.", chars: ['Copper'], dish: 'galette', next: 'a4_9_choice' },
+            { id: 'a4_9_choice', bg: images.bg.dinner, speaker: 'Séraphin', text: "(Galette saucisse...)", chars: ['Copper'], dish: 'galette', choices: [ { text: "Simple et efficace, j'adore la Bretagne !", affinity: { Copper: 1 }, next: 'a4_10_pres' }, { text: "C'est un peu comme un hot-dog, non ?", affinity: { Copper: 0 }, next: 'a4_10_pres' } ]},
+
+            { id: 'a4_10_pres', bg: images.bg.dinner, speaker: 'Marckris', text: "Pour le dessert, j'ai choisi des Crêpes. Avec du chocolat et des noisettes. Tout le monde aime les crêpes !", chars: ['Marckris'], dish: 'crepes', next: 'a4_10_choice' },
+            { id: 'a4_10_choice', bg: images.bg.dinner, speaker: 'Séraphin', text: "(Miam, des crêpes !)", chars: ['Marckris'], dish: 'crepes', choices: [ { text: "Je pourrais en manger dix !", affinity: { Marckris: 1 }, next: 'a4_11_pres' }, { text: "Je préfère les desserts avec des fruits.", affinity: { Marckris: 0 }, next: 'a4_11_pres' } ]},
+
+            { id: 'a4_11_pres', bg: images.bg.dinner, speaker: 'Jung', text: "Le Kouign-Amann. C'est un gâteau breton. En breton, ça veut dire 'gâteau au beurre'. C'est très sucré.", chars: ['Jung'], dish: 'kouign', next: 'a4_11_choice' },
+            { id: 'a4_11_choice', bg: images.bg.dinner, speaker: 'Séraphin', text: "(Du beurre et du sucre...)", chars: ['Jung'], dish: 'kouign', choices: [ { text: "C'est un vrai délice croustillant !", affinity: { Jung: 1 }, next: 'a4_12_pres' }, { text: "C'est un peu trop de beurre pour moi.", affinity: { Jung: 0 }, next: 'a4_12_pres' } ]},
+
+            { id: 'a4_12_pres', bg: images.bg.dinner, speaker: 'Peemwasu', text: "Le Gratin de Christophine des Antilles. C'est un légume qui ressemble à une poire, mais c'est salé.", chars: ['Peemwasu'], dish: 'gratin', next: 'a4_12_choice' },
+            { id: 'a4_12_choice', bg: images.bg.dinner, speaker: 'Séraphin', text: "(Christophine ?)", chars: ['Peemwasu'], dish: 'gratin', choices: [ { text: "C'est original et très doux.", affinity: { Peemwasu: 1 }, next: 'a5_start' }, { text: "Je préfère les légumes classiques.", affinity: { Peemwasu: 0 }, next: 'a5_start' } ]},
+
+            // --- ACTE 5 ---
+            { id: 'a5_start', bg: images.bg.room, speaker: 'Narration', text: "Le dîner est terminé. Nous sommes tous fatigués mais heureux. La suite possède six grands lits doubles (เตียง). C'est le moment de décider de la répartition.", chars: [], next: 'a5_1' },
+            { id: 'a5_1', bg: images.bg.room, speaker: 'Jinwook', text: "Bon, les amis, il est minuit. On doit dormir pour être en forme demain.", chars: ['Jinwook'], next: 'a5_2' },
+            { id: 'a5_2', bg: images.bg.room, speaker: 'Marckris', text: "C’est vrai, il est tard !", chars: ['Marckris', 'Jinwook'], next: 'a5_3' },
+            { id: 'a5_3', bg: images.bg.room, speaker: 'Nex', text: "Les gars, il faut dormir !", chars: ['Nex'], next: 'a5_4' },
+            { id: 'a5_4', bg: images.bg.room, speaker: 'Peemwasu', text: "Oui, mais il n’y a que six lits doubles…", chars: ['Peemwasu', 'Jung'], next: 'a5_5' },
+            { id: 'a5_5', bg: images.bg.room, speaker: 'Jung', text: "Oh, donc trois personnes vont dormir dans le même lit.", chars: ['Jung', 'AA'], next: 'a5_6' },
+            { id: 'a5_6', bg: images.bg.room, speaker: 'AA', text: "Séraphin, puisque tu es notre invité spécial, avec qui veux-tu partager ton lit ?", chars: ['AA'], next: 'a5_choice' },
+            { id: 'a5_choice', bg: images.bg.room, speaker: 'Séraphin', text: "Avec qui dormir ?", chars: [], choices: [ { text: "Dormir avec Alan et Marckris (Ambiance aventurière)", affinity: { Alan: 1, Marckris: 1 }, next: 'a5_end' }, { text: "Dormir avec Khunpol et Heart (Ambiance calme et sérieuse)", affinity: { Khunpol: 1, Heart: 1 }, next: 'a5_end' }, { text: "Dormir avec Jinwook et Thai (Ambiance relax et rigolote)", affinity: { Jinwook: 1, Thai: 1 }, next: 'a5_end' }, { text: "Dormir avec Nex et Phutatchai (Ambiance élégante et mystérieuse)", affinity: { Nex: 1, Phutatchai: 1 }, next: 'a5_end' }, { text: "Dormir avec Copper et AA (Ambiance dynamique et joyeuse)", affinity: { Copper: 1, AA: 1 }, next: 'a5_end' }, { text: "Dormir avec Jung et Peemwasu (Ambiance douce et cocooning)", affinity: { Jung: 1, Peemwasu: 1 }, next: 'a5_end' } ] },
+            { id: 'a5_end', bg: images.bg.room, speaker: 'Narration', text: "Je m'installe dans le lit choisi. On discute encore un peu à voix basse dans le noir. On parle de nos rêves (ความฝัน), de nos peurs... Je sens que je commence à m'attacher à eux. La nuit est douce à Paris.", chars: [], next: 'a6_start' },
+
+            // ACTE 6
+            { id: 'a6_start', bg: images.bg.room, speaker: 'Narration', text: "Le lendemain matin, le réveil (นาฬิกาปลุก) sonne à 7h00. C'est difficile. Il y a de la lumière sous les rideaux. J'entends du bruit dans la chambre. C'est l'effervescence !", chars: [], next: 'a6_1' },
+            { id: 'a6_1', bg: images.bg.room, speaker: 'Thai', text: "(En s'étirant les bras) Ouh là là... J'ai mal au dos. Ce lit était trop mou pour moi.", chars: ['Thai'], next: 'a6_2' },
+            { id: 'a6_2', bg: images.bg.room, speaker: 'Alan', text: "Allez, debout ! Il est l'heure. On a une longue journée aujourd'hui.", chars: ['Alan', 'Thai'], next: 'a6_3' },
+            { id: 'a6_3', bg: images.bg.room, speaker: 'AA', text: "(La tête sous l'oreiller) Encore cinq minutes, s'il vous plaît... Je suis trop fatigué.", chars: ['AA'], next: 'a6_4' },
+            { id: 'a6_4', bg: images.bg.room, speaker: 'Thai', text: "(En riant) Ah... Bien dormi les gars ? Moi, j'ai fait un rêve bizarre avec des dauphins bleus.", chars: ['Thai', 'AA'], next: 'a6_5' },
+            { id: 'a6_5', bg: images.bg.room, speaker: 'AA', text: "Toi, tu as bien dormi, c'est sûr ! Mais pas nous ! Thai, tu as ronflé comme un moteur de vieux camion toute la nuit ! C'était horrible.", chars: ['AA', 'Peemwasu'], next: 'a6_6' },
+            { id: 'a6_6', bg: images.bg.room, speaker: 'Peemwasu', text: "Thai, tu as ronflé comme un moteur de vieux camion toute la nuit ! C'était horrible.", chars: ['Peemwasu', 'Thai'], next: 'a6_7_intro' },
+            { id: 'a6_7_intro', bg: images.bg.room, speaker: 'Thai', text: "C'est pas vrai ! Je respire juste un peu fort. C'est tout. Séraphin, dis-leur la vérité. Je suis un dormeur silencieux, n'est-ce pas ?", chars: ['Thai'], next: 'a6_choice_snore' },
+            {
+                id: 'a6_choice_snore', bg: images.bg.room, speaker: 'Séraphin', text: "...", chars: ['Thai'],
+                choices: [
+                    { text: "Euh... Désolé Thai, mais c'était vraiment très bruyant !", next: 'a6_snore_noisy' },
+                    { text: "Je ne sais pas, j'ai dormi comme un bébé.", next: 'a6_snore_quiet' }
+                ]
+            },
+            { id: 'a6_snore_noisy', bg: images.bg.room, speaker: 'Thai', text: "Oh non... Trahi par mon meilleur allié ! Je suis désolé les gars...", chars: ['Thai'], next: 'a6_8' },
+            { id: 'a6_snore_quiet', bg: images.bg.room, speaker: 'Thai', text: "Vous voyez ? Séraphin est gentil, lui.", chars: ['Thai', 'Jung'], next: 'a6_8' },
+            
+            { id: 'a6_8', bg: images.bg.room, speaker: 'Jung', text: "Bon, assez discuté. Il faut prendre le petit-déjeuner et faire les valises (กระเป๋าเดินทาง). J'ai faim !", chars: ['Jung'], next: 'a6_9' },
+            { id: 'a6_9', bg: images.bg.dinner, speaker: 'Narration', text: "Nous sommes dans la cuisine de la suite. Il y a des croissants, du jus d'orange et du café sur la table. Ça sent bon le pain grillé.", chars: [], location: "Paris - Cuisine", next: 'a6_10' },
+            { id: 'a6_10', bg: images.bg.dinner, speaker: 'Copper', text: "Passe-moi le beurre, s'il te plaît.", chars: ['Copper', 'Phutatchai'], next: 'a6_11' },
+            { id: 'a6_11', bg: images.bg.dinner, speaker: 'Phutatchai', text: "Attention, le café est très chaud !", chars: ['Phutatchai', 'Copper'], next: 'a6_12' },
+            { id: 'a6_12', bg: images.bg.dinner, speaker: 'Séraphin', text: "Ce croissant est délicieux. J'adore le petit-déjeuner français.", chars: [], next: 'a6_13' },
+            { id: 'a6_13', bg: images.bg.dinner, speaker: 'Nex', text: "Oui, c'est bon, mais il faut se dépêcher. Les taxis arrivent dans une heure.", chars: ['Nex'], next: 'a6_14' },
+            { id: 'a6_14', bg: images.bg.room, speaker: 'Narration', text: "C'est la panique dans la chambre. Il y a des vêtements partout sur le sol. Des chaussettes, des t-shirts, des pantalons...", chars: [], location: "Paris - Chambre", next: 'a6_15' },
+            { id: 'a6_15', bg: images.bg.room, speaker: 'Heart', text: "Où est ma chaussette rouge ? Je ne trouve pas ma chaussette rouge !", chars: ['Heart', 'Marckris'], next: 'a6_16' },
+            { id: 'a6_16', bg: images.bg.room, speaker: 'Marckris', text: "Elle est sous le lit, Heart. Regarde bien.", chars: ['Marckris', 'Heart'], next: 'a6_17' },
+            { id: 'a6_17', bg: images.bg.room, speaker: 'Jinwook', text: "Ma valise (กระเป๋าเดินทาง) est trop lourde. Je n'arrive pas à la fermer. Séraphin, tu peux m'aider ?", chars: ['Jinwook'], next: 'a6_18' },
+            { id: 'a6_18', bg: images.bg.room, speaker: 'Séraphin', text: "Bien sûr. On va s'asseoir dessus. Un, deux, trois !", chars: ['Jinwook'], next: 'a6_19' },
+            { id: 'a6_19', bg: images.bg.hotel, speaker: 'Narration', text: "Enfin, les valises sont fermées. Nous descendons dans le hall de l'hôtel. Les taxis sont là. Il pleut un peu à Paris ce matin.", chars: [], location: "Paris - Hall Hôtel", next: 'a6_20' },
+            { id: 'a6_20', bg: images.bg.hotel, speaker: 'Jung', text: "Au revoir Paris ! C'était court, mais c'était bien.", chars: ['Jung', 'Peemwasu'], next: 'a6_21' },
+            { id: 'a6_21', bg: images.bg.hotel, speaker: 'Peemwasu', text: "Je suis triste de partir, mais je suis content de voyager.", chars: ['Peemwasu', 'Phutatchai'], next: 'a6_22' },
+            { id: 'a6_22', bg: images.bg.hotel, speaker: 'Phutatchai', text: "Séraphin, c'est le moment de la décision. On a trois destinations possibles. Le groupe va se séparer. C'est toi qui choisis notre voyage.", chars: ['Phutatchai'], next: 'route_choice' },
+
+            // Choix Route Finale
+            { id: 'route_choice', bg: images.bg.hotel, speaker: 'Choix Crucial', text: "Où partons-nous ?", chars: [], type: 'image', choices: [ { text: "Guadeloupe (Chaleur)", img: images.bg.guadeloupe, next: 'rA_1', route: 'A' }, { text: "St-Pierre (Neige, Calme)", img: images.bg.stpierre, next: 'rB_1', route: 'B' }, { text: "Tahiti (Lagon, Sable)", img: images.bg.tahiti, next: 'rC_1', route: 'C' } ] },
+
+            // === ROUTE A : GUADELOUPE ===
+            { id: 'rA_1', bg: images.bg.guadeloupe, speaker: 'Narration', text: "L'avion atterrit à l'aéroport de Pointe-à-Pitre après 8 heures de vol. Les passagers applaudissent. Les portes s'ouvrent et immédiatement, une chaleur humide (ชื้น) et parfumée nous envahit. C'est très différent de Paris.", chars: [], location: "Guadeloupe - Aéroport", vocab: [{fr: "Chaleur humide", label: "La chaleur humide", th: "ชื้น"}], next: 'rA_2' },
+            { id: 'rA_2', bg: images.bg.guadeloupe, speaker: 'Marckris', text: "Ah ! Enfin à la maison ! Respirez cet air ! Ça sent les fleurs d'hibiscus (ดอกชบา) et l'océan (มหาสมุทร). Nous sommes en Guadeloupe, l'île papillon !", chars: ['Marckris', 'Jinwook'], vocab: [{fr: "Hibiscus", label: "L'hibiscus", th: "ดอกชบา"}, {fr: "Océan", label: "L'océan", th: "มหาสมุทร"}], next: 'rA_3' },
+            { id: 'rA_3', bg: images.bg.guadeloupe, speaker: 'Jinwook', text: "Ouah ! Il fait super chaud ici ! C'est comme entrer dans un sauna tout habillé. Je transpire déjà.", chars: ['Jinwook', 'Khunpol'], next: 'rA_4' },
+            { id: 'rA_4', bg: images.bg.guadeloupe, speaker: 'Khunpol', text: "Vite, je dois enlever mon manteau. C'est l'été ici ! Pourquoi j'ai mis un pull en laine ?", chars: ['Khunpol', 'Nex'], next: 'rA_5' },
+            { id: 'rA_5', bg: images.bg.guadeloupe, speaker: 'Nex', text: "Regardez le ciel. Il est d'un bleu incroyable, presque turquoise (สีฟ้าอมเขียว). Il n'y a pas un seul nuage. Les bagages sont déchargés par le personnel au sol. J'espère qu'ils ne vont pas casser ma guitare.", chars: ['Nex'], vocab: [{fr: "Turquoise", label: "Turquoise", th: "สีฟ้าอมเขียว"}], next: 'rA_6' },
+            { id: 'rA_6', bg: images.bg.guadeloupe, speaker: 'Séraphin', text: "C'est magnifique ! Les couleurs sont très vives, c'est éblouissant. J'ai l'impression d'être dans un tableau.", chars: [], next: 'rA_7' },
+            { id: 'rA_7', bg: images.bg.guadeloupe, speaker: 'Khunpol', text: "Séraphin, ça va ? Tu n'as pas trop chaud ? Ton visage est tout rouge. Nous sommes venus ici pour profiter du soleil (ดวงอาทิตย์), mais il faut être prudent avec les coups de chaleur.", chars: ['Khunpol'], vocab: [{fr: "Soleil", label: "Le soleil", th: "ดวงอาทิตย์"}], next: 'rA_choice_1' },
+            { id: 'rA_choice_1', bg: images.bg.guadeloupe, speaker: 'Séraphin', text: "...", chars: ['Khunpol', 'Nex', 'Marckris'], choices: [ { text: "Si, un peu. J'ai besoin d'une bouteille d'eau fraîche.", affinity: { Nex: 1 }, next: 'rA_8' }, { text: "Non, j'adore la chaleur (ความร้อน) ! Ça me donne de l'énergie !", affinity: { Marckris: 1 }, next: 'rA_8' } ] },
+            { id: 'rA_8', bg: images.bg.guadeloupe, speaker: 'Nex', text: "Tiens, bois un peu. Il faut s'hydrater (ดื่มน้ำ).", chars: ['Nex'], vocab: [{fr: "Chaleur", label: "La chaleur", th: "ความร้อน"}], next: 'rA_9' },
+            { id: 'rA_9', bg: images.bg.guadeloupe, speaker: 'Jinwook', text: "Merci Nex. Bon, on y va ?", chars: ['Jinwook'], next: 'rA_bus' },
+
+            { id: 'rA_bus', bg: images.bg.guadeloupe, speaker: 'Narration', text: "Nous montons dans un bus coloré pour aller à l'hôtel.", chars: [], location: "Guadeloupe - Bus", next: 'rA_bus_1' },
+            { id: 'rA_bus_1', bg: images.bg.guadeloupe, speaker: 'Marckris', text: "Écoutez ce rythme ! C'est du Zouk. Ça donne envie de danser ! Allez, bougez avec moi !", chars: ['Marckris'], next: 'rA_bus_2' },
+            { id: 'rA_bus_2', bg: images.bg.guadeloupe, speaker: 'Nex', text: "Marckris, calme-toi un peu... Les autres passagers nous regardent. Tu es trop bruyant.", chars: ['Nex', 'Jinwook'], next: 'rA_bus_3' },
+            { id: 'rA_bus_3', bg: images.bg.guadeloupe, speaker: 'Jinwook', text: "Moi j'aime bien ! C'est joyeux. Séraphin, tu aimes cette musique ?", chars: ['Jinwook'], next: 'rA_bus_choice' },
+            { id: 'rA_bus_choice', bg: images.bg.guadeloupe, speaker: 'Jinwook', text: "Alors ?", chars: ['Jinwook'], choices: [ { text: "J'adore ! Je danse sur mon siège !", affinity: { Marckris: 1 }, next: 'rA_bus_4' }, { text: "C'est sympa, mais je préfère regarder le paysage tranquillement.", affinity: { Nex: 1 }, next: 'rA_bus_4' }, { text: "Quelle énergie ! Ça me réveille !", affinity: { Jinwook: 1 }, next: 'rA_bus_4' } ] },
+            { id: 'rA_bus_4', bg: images.bg.guadeloupe, speaker: 'Marckris', text: "Ah, vous voyez ! Mais regardez par la fenêtre maintenant !", chars: ['Marckris', 'Khunpol'], next: 'rA_bus_5' },
+            { id: 'rA_bus_5', bg: images.bg.guadeloupe, speaker: 'Khunpol', text: "Ce sont des champs verts immenses... C'est de l'herbe géante ?", chars: ['Khunpol'], next: 'rA_bus_6' },
+            { id: 'rA_bus_6', bg: images.bg.guadeloupe, speaker: 'Marckris', text: "Non, c'est de la canne à sucre (อ้อย). C'est avec ça qu'on fait le sucre et le rhum. C'est très important pour l'économie de l'île.", chars: ['Marckris', 'Nex'], vocab: [{fr: "Canne à sucre", label: "La canne à sucre", th: "อ้อย"}], next: 'rA_bus_7' },
+            { id: 'rA_bus_7', bg: images.bg.guadeloupe, speaker: 'Nex', text: "Et il y a aussi beaucoup de bananiers. La banane (กล้วย) est 'l'or vert' de la Guadeloupe.", chars: ['Nex'], vocab: [{fr: "Banane", label: "La banane", th: "กล้วย"}], next: 'rA_bus_8' },
+            { id: 'rA_bus_8', bg: images.bg.guadeloupe, speaker: 'Jinwook', text: "Moi, je préfère manger les bananes que les regarder. J'ai faim !", chars: ['Jinwook'], next: 'rA_bus_9' },
+            { id: 'rA_bus_9', bg: images.bg.guadeloupe, speaker: 'Nex', text: "Allons manger alors !", chars: ['Nex'], next: 'rA_market' },
+
+            { id: 'rA_market', bg: images.bg.guadeloupe, speaker: 'Narration', text: "Le lendemain matin, marché de Basse-Terre. C'est un endroit animé. Il y a beaucoup de monde. Ça crie, ça rit, ça discute. Les étals sont remplis de couleurs.", chars: [], location: "Guadeloupe - Marché", next: 'rA_market_1' },
+            { id: 'rA_market_1', bg: images.bg.guadeloupe, speaker: 'Vendeuse', text: "Allez, goûtez mes fruits ! Mangues (มะม่วง), ananas (สับปะรด), fruits de la passion (เสาวรส), caramboles (มะเฟือง) !", chars: [], vocab: [{fr: "Mangue", label: "La mangue", th: "มะม่วง"}, {fr: "Ananas", label: "L'ananas", th: "สับปะรด"}, {fr: "Fruit de la passion", label: "Le fruit de la passion", th: "เสาวรส"}, {fr: "Carambole", label: "La carambole", th: "มะเฟือง"}], next: 'rA_market_2' },
+            { id: 'rA_market_2', bg: images.bg.guadeloupe, speaker: 'Khunpol', text: "Ça sent fort les épices (เครื่องเทศ) ici. C'est quoi cette odeur (กลิ่น) chaude ? C'est de la cannelle (อบเชย) ?", chars: ['Khunpol'], vocab: [{fr: "Epices", label: "Les épices", th: "เครื่องเทศ"}, {fr: "Odeur", label: "L'odeur", th: "กลิ่น"}, {fr: "Cannelle", label: "La cannelle", th: "อบเชย"}], next: 'rA_market_3' },
+            { id: 'rA_market_3', bg: images.bg.guadeloupe, speaker: 'Nex', text: "Oui, c'est de la cannelle, et je sens aussi de la vanille. Mais regardez ça, c'est de la poudre de Colombo. C'est un mélange d'épices très célèbre ici, comme le curry, pour cuisiner le poulet.", chars: ['Nex', 'Jinwook'], next: 'rA_market_4' },
+            { id: 'rA_market_4', bg: images.bg.guadeloupe, speaker: 'Jinwook', text: "Regardez ces chapeaux en feuilles de palmier (ต้นปาล์ม) ! J'en veux un. Séraphin, lequel je choisis ?", chars: ['Jinwook'], vocab: [{fr: "Palmier", label: "Le palmier", th: "ต้นปาล์ม"}], next: 'rA_hat_choice' },
+            { id: 'rA_hat_choice', bg: images.bg.guadeloupe, speaker: 'Séraphin', text: "...", chars: ['Jinwook'], choices: [ { text: "Le jaune très coloré avec le ruban rouge !", affinity: { Jinwook: 1 }, next: 'rA_market_5' }, { text: "Le chapeau en paille simple, plus élégant.", affinity: { Nex: 1 }, next: 'rA_market_5' }, { text: "Tu n'as pas besoin de chapeau, tes cheveux te protègent !", affinity: { Khunpol: 1 }, next: 'rA_market_5' } ] },
+            { id: 'rA_market_5', bg: images.bg.guadeloupe, speaker: 'Khunpol', text: "Moi je vais acheter du piment (พริก) antillais !", chars: ['Khunpol'], vocab: [{fr: "Piment", label: "Le piment", th: "พริก"}], next: 'rA_market_6' },
+            { id: 'rA_market_6', bg: images.bg.guadeloupe, speaker: 'Marckris', text: "Attention Khunpol ! Ce piment est volcanique (เกี่ยวกับภูเขาไฟ).", chars: ['Marckris'], vocab: [{fr: "Volcanique", label: "Volcanique", th: "เกี่ยวกับภูเขาไฟ"}], next: 'rA_market_7' },
+            { id: 'rA_market_7', bg: images.bg.guadeloupe, speaker: 'Nex', text: "Allez, on achète des fruits pour le pique-nique et on y va. La randonnée nous attend.", chars: ['Nex'], next: 'rA_hike' },
+
+            { id: 'rA_hike', bg: images.bg.guadeloupe, speaker: 'Narration', text: "Au pied du volcan de la Soufrière. Forêt (ป่า) tropicale humide.", chars: [], location: "Guadeloupe - Volcan", vocab: [{fr: "Forêt", label: "La forêt", th: "ป่า"}, {fr: "Fougère", label: "La fougère", th: "เฟิร์น"}], next: 'rA_hike_1' },
+            { id: 'rA_hike_1', bg: images.bg.guadeloupe, speaker: 'Marckris', text: "Allez, c'est parti ! On va voir le cratère ! Nous marchons vite.", chars: ['Marckris'], next: 'rA_hike_2' },
+            { id: 'rA_hike_2', bg: images.bg.guadeloupe, speaker: 'Jinwook', text: "Attendez-moi ! J'ai une pierre dans ma chaussure... Et ça monte beaucoup !", chars: ['Jinwook', 'Khunpol'], next: 'rA_hike_3' },
+            { id: 'rA_hike_3', bg: images.bg.guadeloupe, speaker: 'Khunpol', text: "Allez courage... Oh ! Une grosse araignée (แมงมุม) noire ! Ne bougez pas !", chars: ['Khunpol', 'Nex'], vocab: [{fr: "Araignée", label: "L'araignée", th: "แมงมุม"}], next: 'rA_hike_4' },
+            { id: 'rA_hike_4', bg: images.bg.guadeloupe, speaker: 'Nex', text: "Elle est belle. C'est une matoutou falaise (แมงมุมทารันทูล่าท้องถิ่น). Elle est inoffensive (ไม่เป็นอันตราย), elle tisse sa toile.", chars: ['Nex'], vocab: [{fr: "Matoutou Falaise", label: "La matoutou falaise", th: "แมงมุมทารันทูล่าท้องถิ่น"}, {fr: "Inoffensif", label: "Inoffensif", th: "ไม่เป็นอันตราย"}], next: 'rA_spider_choice' },
+            { id: 'rA_spider_choice', bg: images.bg.guadeloupe, speaker: 'Séraphin', text: "...", chars: ['Khunpol', 'Nex'], choices: [ { text: "Aaaah ! Enlève-la, Khunpol ! J'ai peur des araignées !", affinity: { Khunpol: 1 }, next: 'rA_hike_5' }, { text: "Elle est fascinante, tu as raison Nex. Regardons-la de plus près.", affinity: { Nex: 1 }, next: 'rA_hike_5' }, { text: "On s'en fiche de l'araignée, continuons la marche ! On va être en retard !", affinity: { Marckris: 1 }, next: 'rA_hike_5' } ] },
+            { id: 'rA_hike_5', bg: images.bg.guadeloupe, speaker: 'Jinwook', text: "J'ai soif... et j'ai faim. On fait une pause ?", chars: ['Jinwook'], next: 'rA_hike_6' },
+            { id: 'rA_hike_6', bg: images.bg.guadeloupe, speaker: 'Marckris', text: "D'accord, mais juste cinq minutes !", chars: ['Marckris'], next: 'rA_end' },
+
+            { id: 'rA_end', bg: images.bg.guadeloupe, speaker: 'Narration', text: "Nous redescendons vers la plage (ชายหาด) de Grande-Anse. Le sable (ทราย) est doré.", chars: [], location: "Guadeloupe - Plage", vocab: [{fr: "Plage", label: "La plage", th: "ชายหาด"}, {fr: "Sable", label: "Le sable", th: "ทราย"}], next: 'rA_end_1' },
+            { id: 'rA_end_1', bg: images.bg.guadeloupe, speaker: 'Jinwook', text: "Je vais nager pour me rafraîchir !", chars: ['Jinwook'], next: 'rA_end_2' },
+            { id: 'rA_end_2', bg: images.bg.guadeloupe, speaker: 'Nex', text: "Séraphin, tu as fait ton choix ? Tu restes ou tu pars ?", chars: ['Nex'], next: 'rA_final_choice' },
+            
+            // CHOIX FINAL A
+            { id: 'rA_final_choice', bg: images.bg.guadeloupe, speaker: 'Séraphin', text: "Mon choix est...", chars: [], choices: [
+                { text: "Je n'ai vraiment pas aimé ce voyage, désolé... (fin célibataire)", affinity: {}, next: 'end_single' },
+                { text: "Je reste pour l'énergie et la joie de vivre ici. (+1 Marckris)", affinity: { Marckris: 1 }, next: 'end_A_marckris' },
+                { text: "Je reste pour le calme et la musique de l'île. (+1 Nex)", affinity: { Nex: 1 }, next: 'end_A_nex' },
+                { text: "Je reste pour la sécurité. (+1 Khunpol)", affinity: { Khunpol: 1 }, next: 'end_A_khunpol' },
+                { text: "Je reste pour le sport ! (+1 Jinwook)", affinity: { Jinwook: 1 }, next: 'end_A_jinwook' }
+            ]},
+
+            // === ROUTE B ===
+            { id: 'rB_1', bg: images.bg.stpierre, speaker: 'Narration', text: "L'avion atterrit. Dehors, tout est blanc.", chars: [], location: "St-Pierre - Aéroport", vocab: [{fr:"Rafales de vent", label: "Les rafales de vent", th:"ลมกระโชกแรง"}], next: 'rB_2' },
+            { id: 'rB_2', bg: images.bg.stpierre, speaker: 'Jung', text: "C'est magnifique ! La neige (หิมะ) est pure.", chars: ['Jung', 'AA'], vocab: [{fr: "Neige", label: "La neige", th: "หิมะ"}], next: 'rB_3' },
+            { id: 'rB_3', bg: images.bg.stpierre, speaker: 'AA', text: "Brrr ! Il fait trop froid (หนาว) ! Je ne sens plus mes oreilles !", chars: ['AA', 'Peemwasu'], vocab: [{fr: "Froid", label: "Le froid", th: "หนาว"}], next: 'rB_4' },
+            { id: 'rB_4', bg: images.bg.stpierre, speaker: 'Peemwasu', text: "Vite ! Mettez vos écharpes. Le froid est bon pour la peau si on se protège.", chars: ['Peemwasu', 'Heart'], next: 'rB_5' },
+            { id: 'rB_5', bg: images.bg.stpierre, speaker: 'Heart', text: "Séraphin, tu trembles. Tu veux ma veste ?", chars: ['Heart'], next: 'rB_choice_1' },
+            { id: 'rB_choice_1', bg: images.bg.stpierre, speaker: 'Séraphin', text: "...", chars: ['Heart', 'Jung'], choices: [ { text: "Non merci, j'aime bien la fraîcheur.", affinity: { Jung: 1 }, next: 'rB_6' }, { text: "Oh oui, s'il te plaît Heart !", affinity: { Heart: 1 }, next: 'rB_6' } ] },
+            { id: 'rB_6', bg: images.bg.stpierre, speaker: 'Jung', text: "Allez, ne restons pas là. Le taxi nous attend.", chars: ['Jung'], next: 'rB_7' },
+            { id: 'rB_7', bg: images.bg.stpierre, speaker: 'AA', text: "Moi, je veux juste un chocolat chaud.", chars: ['AA'], next: 'rB_chalet' },
+
+            { id: 'rB_chalet', bg: images.bg.stpierre, speaker: 'Narration', text: "Nous arrivons dans notre grand chalet en bois.", chars: [], location: "St-Pierre - Chalet", vocab: [{fr: "Fourrure", label: "La fourrure", th: "ขนสัตว์"}], next: 'rB_chalet_1' },
+            { id: 'rB_chalet_1', bg: images.bg.stpierre, speaker: 'AA', text: "Je prends le lit près du radiateur !", chars: ['AA', 'Heart'], next: 'rB_chalet_2' },
+            { id: 'rB_chalet_2', bg: images.bg.stpierre, speaker: 'Heart', text: "Moi je veux voir la forêt (ป่า) par la fenêtre.", chars: ['Heart', 'Jung'], vocab: [{fr: "Forêt", label: "La forêt", th: "ป่า"}], next: 'rB_chalet_3' },
+            { id: 'rB_chalet_3', bg: images.bg.stpierre, speaker: 'Jung', text: "Il y a une vieille bibliothèque ici.", chars: ['Jung', 'Peemwasu'], next: 'rB_chalet_4' },
+            { id: 'rB_chalet_4', bg: images.bg.stpierre, speaker: 'Peemwasu', text: "Je vais préparer la salle de bain pour ce soir.", chars: ['Peemwasu'], next: 'rB_chalet_5' },
+            { id: 'rB_chalet_5', bg: images.bg.stpierre, speaker: 'Jung', text: "Bonne idée. Mais avant, qu'est-ce qu'on fait ?", chars: ['Jung'], next: 'rB_chalet_choice' },
+            { id: 'rB_chalet_choice', bg: images.bg.stpierre, speaker: 'Séraphin', text: "Que faire ?", chars: [], choices: [ { text: "Je vais lire avec toi, Jung.", affinity: { Jung: 1 }, next: 'rB_walk' }, { text: "Super idée Peemwasu ! Soirée spa.", affinity: { Peemwasu: 1 }, next: 'rB_walk' }, { text: "AA, attends ! Bataille de polochons ?", affinity: { AA: 1 }, next: 'rB_walk' } ] },
+
+            { id: 'rB_walk', bg: images.bg.stpierre, speaker: 'Narration', text: "Le lendemain, promenade dans le village.", chars: [], location: "St-Pierre - Village", vocab: [{fr: "Brume", label: "La brume", th: "หมอกหนา"}], next: 'rB_walk_1' },
+            { id: 'rB_walk_1', bg: images.bg.stpierre, speaker: 'Séraphin', text: "C'est très joli. Pourquoi tant de couleurs ?", chars: [], next: 'rB_walk_2' },
+            { id: 'rB_walk_2', bg: images.bg.stpierre, speaker: 'Jung', text: "C'est une tradition. C'est pour être vu dans la brume.", chars: ['Jung', 'AA'], next: 'rB_walk_3' },
+            { id: 'rB_walk_3', bg: images.bg.stpierre, speaker: 'AA', text: "Attention, ça glisse ! Le trottoir est gelé (เป็นน้ำแข็ง) !", chars: ['AA', 'Heart'], vocab: [{fr: "Gelé", label: "Gelé", th: "เป็นน้ำแข็ง"}], next: 'rB_walk_4' },
+            { id: 'rB_walk_4', bg: images.bg.stpierre, speaker: 'Heart', text: "Fais attention AA ! Oh, regardez ! Il y a une petite boulangerie.", chars: ['Heart', 'Jung'], next: 'rB_walk_5' },
+            { id: 'rB_walk_5', bg: images.bg.stpierre, speaker: 'Jung', text: "Et là, un musée sur la pêche à la morue (ปลาคอด).", chars: ['Jung'], vocab: [{fr: "Morue", label: "La morue", th: "ปลาคอด"}], next: 'rB_walk_choice' },
+            { id: 'rB_walk_choice', bg: images.bg.stpierre, speaker: 'Séraphin', text: "On va où ?", chars: [], choices: [ { text: "Allons à la boulangerie !", affinity: { Heart: 1, AA: 1 }, next: 'rB_seal' }, { text: "Le musée a l'air intéressant.", affinity: { Jung: 1 }, next: 'rB_seal' }, { text: "Restons dehors pour des photos.", affinity: { Peemwasu: 1 }, next: 'rB_seal' } ] },
+
+            { id: 'rB_seal', bg: images.bg.stpierre, speaker: 'Narration', text: "Nous sommes sur un petit bateau de pêche.", chars: [], location: "St-Pierre - Bateau", vocab: [{fr: "Phoque", label: "Le phoque", th: "แมวน้ำ"}], next: 'rB_seal_1' },
+            { id: 'rB_seal_1', bg: images.bg.stpierre, speaker: 'Peemwasu', text: "Regardez les phoques sur le rocher ! Ils sont mignons.", chars: ['Peemwasu', 'AA'], next: 'rB_seal_2' },
+            { id: 'rB_seal_2', bg: images.bg.stpierre, speaker: 'AA', text: "Le bateau bouge trop... Je vais être malade.", chars: ['AA', 'Heart'], next: 'rB_seal_3' },
+            { id: 'rB_seal_3', bg: images.bg.stpierre, speaker: 'Heart', text: "Respire AA, regarde l'horizon.", chars: ['Heart', 'Jung'], next: 'rB_seal_4' },
+            { id: 'rB_seal_4', bg: images.bg.stpierre, speaker: 'Jung', text: "Chut ! Les phoques sont effrayés par le bruit.", chars: ['Jung'], next: 'rB_seal_5' },
+            { id: 'rB_seal_5', bg: images.bg.stpierre, speaker: 'Séraphin', text: "C'est impressionnant de les voir en liberté.", chars: [], next: 'rB_seal_choice' },
+            { id: 'rB_seal_choice', bg: images.bg.stpierre, speaker: 'Séraphin', text: "...", chars: [], choices: [ { text: "C'est l'aventure ! J'adore les vagues !", affinity: { Jung: 1 }, next: 'rB_end' }, { text: "Pauvre AA... Viens t'asseoir.", affinity: { AA: 1 }, next: 'rB_end' }, { text: "Peemwasu, prends une photo !", affinity: { Peemwasu: 1 }, next: 'rB_end' } ] },
+
+            { id: 'rB_end', bg: images.bg.stpierre, speaker: 'Narration', text: "De retour au chalet. C'est la dernière soirée.", chars: [], location: "St-Pierre - Chalet", next: 'rB_end_1' },
+            { id: 'rB_end_1', bg: images.bg.stpierre, speaker: 'Heart', text: "C'était un beau voyage. J'ai aimé le calme.", chars: ['Heart', 'Jung'], next: 'rB_end_2' },
+            { id: 'rB_end_2', bg: images.bg.stpierre, speaker: 'Jung', text: "Séraphin, tu dois faire un choix maintenant.", chars: ['Jung'], next: 'rB_final_choice' },
+
+            // CHOIX FINAL B
+            { id: 'rB_final_choice', bg: images.bg.stpierre, speaker: 'Séraphin', text: "Je décide de...", chars: [], choices: [
+                { text: "Je rentre, il fait trop froid. (Fin célibataire)", affinity: {}, next: 'end_single' },
+                { text: "Je reste pour la poésie. (+1 Jung)", affinity: { Jung: 1 }, next: 'end_B_jung' },
+                { text: "Je reste pour prendre soin de nous. (+1 Peemwasu)", affinity: { Peemwasu: 1 }, next: 'end_B_peemwasu' },
+                { text: "Je reste pour la chaleur du foyer. (+1 Heart)", affinity: { Heart: 1 }, next: 'end_B_heart' },
+                { text: "Je reste pour l'aventure ! (+1 AA)", affinity: { AA: 1 }, next: 'end_B_aa' }
+            ]},
+
+            // === ROUTE C : TAHITI ===
+            { id: 'rC_1', bg: images.bg.tahiti, speaker: 'Narration', text: "Nous arrivons à l'aéroport de Tahiti-Faa'a.", chars: [], location: "Tahiti - Aéroport", vocab: [{fr: "Fleur de Tiaré", label: "La fleur de Tiaré", th: "ดอกเทียเร่"}], next: 'rC_2' },
+            { id: 'rC_2', bg: images.bg.tahiti, speaker: 'Thai', text: "Bienvenue au paradis (สวรรค์) ! Ia Orana !", chars: ['Thai', 'Phutatchai'], vocab: [{fr: "Paradis", label: "Le paradis", th: "สวรรค์"}], next: 'rC_3' },
+            { id: 'rC_3', bg: images.bg.tahiti, speaker: 'Phutatchai', text: "(Me mettant un collier) Laisse-moi te mettre ça, Séraphin. Ce collier est offert pour souhaiter la bienvenue.", chars: ['Phutatchai', 'Alan'], next: 'rC_4' },
+            { id: 'rC_4', bg: images.bg.tahiti, speaker: 'Alan', text: "J'ai hâte de goûter la cuisine locale !", chars: ['Alan', 'Copper'], next: 'rC_5' },
+            { id: 'rC_5', bg: images.bg.tahiti, speaker: 'Copper', text: "Moi je veux juste dormir.", chars: ['Copper'], next: 'rC_choice_1' },
+            { id: 'rC_choice_1', bg: images.bg.tahiti, speaker: 'Séraphin', text: "...", chars: [], choices: [ { text: "Merci Phutatchai.", affinity: { Phutatchai: 1 }, next: 'rC_bungalow' }, { text: "Allons vite voir la mer !", affinity: { Thai: 1 }, next: 'rC_bungalow' }, { text: "Pauvre Cooper... Courage.", affinity: { Copper: 1 }, next: 'rC_bungalow' } ] },
+            
+            { id: 'rC_bungalow', bg: images.bg.tahiti, speaker: 'Narration', text: "Nous arrivons dans notre bungalow sur pilotis.", chars: [], location: "Tahiti - Bungalow", next: 'rC_bungalow_1' },
+            { id: 'rC_bungalow_1', bg: images.bg.tahiti, speaker: 'Copper', text: "C'est dingue ! Je dors au-dessus de l'eau ! Regardez ! Je vois un poisson (ปลา) bleu !", chars: ['Copper', 'Alan'], vocab: [{fr: "Poisson", label: "Le poisson", th: "ปลา"}], next: 'rC_bungalow_2' },
+            { id: 'rC_bungalow_2', bg: images.bg.tahiti, speaker: 'Alan', text: "Regardez, des noix de coco. Qui veut goûter ?", chars: ['Alan', 'Thai'], next: 'rC_bungalow_3' },
+            { id: 'rC_bungalow_3', bg: images.bg.tahiti, speaker: 'Thai', text: "Je vais regarder les étoiles (ดวงดาว). C'est la Croix du Sud.", chars: ['Thai'], vocab: [{fr: "Étoile", label: "L'étoile", th: "ดวงดาว"}, {fr: "Constellation", label: "La constellation", th: "กลุ่มดาว"}], next: 'rC_bungalow_choice' },
+            { id: 'rC_bungalow_choice', bg: images.bg.tahiti, speaker: 'Séraphin', text: "...", chars: [], choices: [ { text: "Je veux bien une noix de coco.", affinity: { Alan: 1 }, next: 'rC_shark' }, { text: "Je viens avec toi Thai.", affinity: { Thai: 1 }, next: 'rC_shark' }, { text: "Cooper, on saute ?", affinity: { Copper: 1 }, next: 'rC_shark' } ] },
+            
+            { id: 'rC_shark', bg: images.bg.tahiti, speaker: 'Narration', text: "Le lendemain matin, excursion en bateau.", chars: [], location: "Tahiti - Lagon", vocab: [{fr: "Récif de corail", label: "Le récif de corail", th: "แนวปะการัง"}, {fr: "Raie", label: "La raie", th: "ปลากระเบน"}], next: 'rC_shark_1' },
+            { id: 'rC_shark_1', bg: images.bg.tahiti, speaker: 'Thai', text: "C'est ici ! On va nager avec les requins (ฉลาม) et les raies.", chars: ['Thai', 'Copper'], vocab: [{fr: "Requin", label: "Le requin", th: "ฉลาม"}], next: 'rC_shark_2' },
+            { id: 'rC_shark_2', bg: images.bg.tahiti, speaker: 'Copper', text: "J'ai peur ! Les requins ont des dents !", chars: ['Copper', 'Phutatchai'], next: 'rC_shark_3' },
+            { id: 'rC_shark_3', bg: images.bg.tahiti, speaker: 'Phutatchai', text: "Regarde cette raie manta (ปลากระเบนแมนตา) qui passe, Séraphin.", chars: ['Phutatchai', 'Alan'], vocab: [{fr: "Raie Manta", label: "La raie manta", th: "ปลากระเบนแมนตา"}], next: 'rC_shark_4' },
+            { id: 'rC_shark_4', bg: images.bg.tahiti, speaker: 'Alan', text: "Moi je reste sur le bateau prendre des photos.", chars: ['Alan'], next: 'rC_shark_choice' },
+            { id: 'rC_shark_choice', bg: images.bg.tahiti, speaker: 'Séraphin', text: "...", chars: [], choices: [ { text: "J'y vais !", affinity: { Thai: 1 }, next: 'rC_dance' }, { text: "Je reste avec toi Alan.", affinity: { Alan: 1 }, next: 'rC_dance' }, { text: "Phutatchai, donne-moi la main.", affinity: { Phutatchai: 1 }, next: 'rC_dance' } ] },
+            
+            { id: 'rC_dance', bg: images.bg.tahiti, speaker: 'Narration', text: "L'après-midi, cours de danse Tamure sur la plage.", chars: [], location: "Tahiti - Plage", next: 'rC_dance_1' },
+            { id: 'rC_dance_1', bg: images.bg.tahiti, speaker: 'Professeur de danse', text: "Allez les garçons ! Pliez les genoux !", chars: [], next: 'rC_dance_2' },
+            { id: 'rC_dance_2', bg: images.bg.tahiti, speaker: 'Copper', text: "Regardez mes hanches ! Je suis un pro !", chars: ['Copper', 'Phutatchai'], next: 'rC_dance_3' },
+            { id: 'rC_dance_3', bg: images.bg.tahiti, speaker: 'Phutatchai', text: "C'est difficile... Je suis tout raide.", chars: ['Phutatchai', 'Alan'], next: 'rC_dance_4' },
+            { id: 'rC_dance_4', bg: images.bg.tahiti, speaker: 'Alan', text: "Ça donne soif.", chars: ['Alan'], next: 'rC_dance_choice' },
+            { id: 'rC_dance_choice', bg: images.bg.tahiti, speaker: 'Séraphin', text: "...", chars: [], choices: [ { text: "Bravo Cooper !", affinity: { Copper: 1 }, next: 'rC_end' }, { text: "Phutatchai, détends-toi !", affinity: { Phutatchai: 1 }, next: 'rC_end' }, { text: "J'ai soif aussi Alan.", affinity: { Alan: 1 }, next: 'rC_end' } ] },
+            
+            { id: 'rC_end', bg: images.bg.tahiti, speaker: 'Narration', text: "C'est notre dernier repas.", chars: [], next: 'rC_end_1' },
+            { id: 'rC_end_1', bg: images.bg.tahiti, speaker: 'Thai', text: "C'est la fin... Tu as fait ton choix ?", chars: ['Thai'], next: 'rC_final_choice' },
+
+            // CHOIX FINAL C
+            { id: 'rC_final_choice', bg: images.bg.tahiti, speaker: 'Séraphin', text: "Je décide de...", chars: [], choices: [
+                { text: "Je n'ai vraiment pas aimé ce voyage, désolé... (fin célibataire)", affinity: {}, next: 'end_single' },
+                { text: "Je veux rester, car j'aime le calme. (+1 Thai)", affinity: { Thai: 1 }, next: 'end_C_thai' },
+                { text: "Je veux rester, car j'aime la fête ! (+1 Cooper)", affinity: { Copper: 1 }, next: 'end_C_copper' },
+                { text: "Je veux rester, car j'aime la nature. (+1 Phutatchai)", affinity: { Phutatchai: 1 }, next: 'end_C_phutatchai' },
+                { text: "Je veux rester, car j'aime la bonne cuisine. (+1 Alan)", affinity: { Alan: 1 }, next: 'end_C_alan' }
+            ]},
+
+            // FINS (Le reste est identique au script précédent...)
+            { id: 'end_single', bg: images.bg.hotel, speaker: 'Séraphin', text: "Je suis désolé les amis... Mais ce n'est pas pour moi. Je préfère ma vie à Paris.", chars: [], next: 'end_single_2' },
+            { id: 'end_single_2', bg: images.bg.hotel, speaker: 'Narration', text: "Mes amis comprennent. Je fais ma valise et je rentre seul en France.", chars: [], next: 'final_reveal' },
+
+            { id: 'end_A_marckris', bg: images.bg.guadeloupe, speaker: 'Séraphin', text: "Marckris, ton énergie est incroyable. Je veux rester ici avec toi.", chars: ['Marckris'], next: 'final_reveal' },
+            { id: 'end_A_nex', bg: images.bg.guadeloupe, speaker: 'Séraphin', text: "Nex... J'aime ton calme. Je veux continuer à écouter ta musique.", chars: ['Nex'], next: 'final_reveal' },
+            { id: 'end_A_khunpol', bg: images.bg.guadeloupe, speaker: 'Séraphin', text: "Khunpol, tu m'as protégé. Je veux rester avec toi.", chars: ['Khunpol'], next: 'final_reveal' },
+            { id: 'end_A_jinwook', bg: images.bg.guadeloupe, speaker: 'Séraphin', text: "Jinwook ! Je ne veux pas m'arrêter. Avec toi, chaque jour est une aventure.", chars: ['Jinwook'], next: 'final_reveal' },
+
+            { id: 'end_B_jung', bg: images.bg.stpierre, speaker: 'Séraphin', text: "Jung, j'ai aimé regarder la neige avec toi. J'ai aimé ton silence. Je veux rester ici.", chars: ['Jung'], next: 'final_reveal' },
+            { id: 'end_B_peemwasu', bg: images.bg.stpierre, speaker: 'Séraphin', text: "Peemwasu, j'aime ta douceur. Je veux rester avec toi.", chars: ['Peemwasu'], next: 'final_reveal' },
+            { id: 'end_B_heart', bg: images.bg.stpierre, speaker: 'Séraphin', text: "Heart, ta gentillesse me réchauffe. Je reste.", chars: ['Heart'], next: 'final_reveal' },
+            { id: 'end_B_aa', bg: images.bg.stpierre, speaker: 'Séraphin', text: "AA ! Je veux que l'aventure continue !", chars: ['AA'], next: 'final_reveal' },
+
+            { id: 'end_C_thai', bg: images.bg.tahiti, speaker: 'Séraphin', text: "Thai, je me sens connecté à l'océan. Je veux rester.", chars: ['Thai'], next: 'final_reveal' },
+            { id: 'end_C_copper', bg: images.bg.tahiti, speaker: 'Séraphin', text: "Cooper ! Je ne peux pas partir. J'aime trop la fête !", chars: ['Copper'], next: 'final_reveal' },
+            { id: 'end_C_phutatchai', bg: images.bg.tahiti, speaker: 'Séraphin', text: "Phutatchai... Je veux protéger la nature avec toi.", chars: ['Phutatchai'], next: 'final_reveal' },
+            { id: 'end_C_alan', bg: images.bg.tahiti, speaker: 'Séraphin', text: "Alan... Ta cuisine est magique. Je veux rester.", chars: ['Alan'], next: 'final_reveal' }
+        ];
+
+        // --- MOTEUR ---
+        function renderScene() {
+            if (state.currentId === 'final_reveal') {
+                showEnding();
+                return;
+            }
+
+            const scene = script.find(s => s.id === state.currentId);
+            if(!scene) return;
+
+            const getText = (txt) => txt.replace(/Séraphin/g, state.playerName);
+
+            // GESTION DU LIEU ET VOCABULAIRE
+            if (scene.location) state.currentLocation = scene.location;
+            
+            const vocabList = document.getElementById('vocab-list');
+            
+            if (scene.vocab) {
+                let added = false;
+                scene.vocab.forEach(word => {
+                    if (!state.vocabHistory.some(v => v.fr === word.fr)) {
+                        state.vocabHistory.push(word);
+                        added = true;
+                        
+                        // Ajout DOM direct pour éviter de tout redessiner
+                        const li = document.createElement('li');
+                        li.className = 'vocab-item new'; // Classe pour animation
+                        const displayWord = word.label || word.fr;
+                        li.innerHTML = `<span class="vocab-word">${displayWord}</span> <span class="vocab-thai">${word.th}</span>`;
+                        vocabList.appendChild(li);
+                    }
+                });
+
+                // Garder les 6 derniers
+                if (state.vocabHistory.length > 6) {
+                    state.vocabHistory = state.vocabHistory.slice(-6);
+                    // Nettoyer le DOM pour correspondre (enlever les premiers enfants)
+                    while (vocabList.children.length > 6) {
+                        vocabList.removeChild(vocabList.firstChild);
+                    }
+                }
+            }
+            
+            // Si la liste est vide au chargement initial
+            if (vocabList.children.length === 0 && state.vocabHistory.length > 0) {
+                 state.vocabHistory.forEach(item => {
+                    const li = document.createElement('li');
+                    li.className = 'vocab-item';
+                    const displayWord = item.label || item.fr;
+                    li.innerHTML = `<span class="vocab-word">${displayWord}</span> <span class="vocab-thai">${item.th}</span>`;
+                    vocabList.appendChild(li);
+                });
+            }
+
+            document.getElementById('location-display').innerText = "📍 " + state.currentLocation;
+
+            // GESTION FOND (Optimisée)
+            const bgLayer = document.getElementById('bg');
+            const newBg = `url('${scene.bg}')`;
+            if (bgLayer.style.backgroundImage.replace(/["']/g, "") !== newBg.replace(/["']/g, "")) {
+                bgLayer.style.backgroundImage = newBg;
+            }
+
+            // GESTION PERSONNAGES & PLATS (Optimisée)
+            const charContainer = document.getElementById('chars');
+            const speakerName = getText(scene.speaker);
+            const existingNodes = Array.from(charContainer.children);
+            const neededChars = scene.chars || [];
+            const neededDish = scene.dish || null; 
+
+            // Nettoyage intelligent
+            existingNodes.forEach(node => {
+                const name = node.dataset.name;
+                const type = node.dataset.type; 
+
+                if (type === 'char') {
+                    if (neededChars.includes(name)) {
+                        node.className = `char-sprite active ${name === speakerName ? 'speaking' : ''}`;
+                    } else {
+                        node.classList.remove('active', 'speaking');
+                        setTimeout(() => { if (!node.classList.contains('active') && node.parentNode) node.remove(); }, 400);
+                    }
+                } else if (type === 'dish') {
+                    if (name === neededDish) {
+                        node.className = 'dish-sprite active';
+                    } else {
+                        node.classList.remove('active');
+                        setTimeout(() => { if (!node.classList.contains('active') && node.parentNode) node.remove(); }, 400);
+                    }
+                }
+            });
+
+            // Ajout
+            neededChars.forEach(name => {
+                const exists = existingNodes.find(node => node.dataset.name === name && node.dataset.type === 'char');
+                if (!exists && images.chars[name]) {
+                    const img = document.createElement('img');
+                    img.src = images.chars[name];
+                    img.dataset.name = name;
+                    img.dataset.type = 'char';
+                    img.className = `char-sprite ${name === speakerName ? 'speaking' : ''}`;
+                    charContainer.appendChild(img);
+                    void img.offsetWidth; 
+                    img.classList.add('active');
+                }
+            });
+            if (neededDish) {
+                const exists = existingNodes.find(node => node.dataset.name === neededDish && node.dataset.type === 'dish');
+                if (!exists && images.dishes[neededDish]) {
+                    const img = document.createElement('img');
+                    img.src = images.dishes[neededDish];
+                    img.dataset.name = neededDish;
+                    img.dataset.type = 'dish';
+                    img.className = 'dish-sprite';
+                    charContainer.appendChild(img);
+                    void img.offsetWidth;
+                    img.classList.add('active');
+                }
+            }
+
+            // UI
+            document.getElementById('dialogue-panel').style.display = 'flex';
+            document.getElementById('choice-screen').style.display = 'none';
+            
+            const nameTag = document.getElementById('name-tag');
+            const displayName = getText(scene.speaker);
+            nameTag.innerText = displayName;
+            nameTag.classList.remove('right-aligned');
+            if (displayName === state.playerName) {
+                nameTag.style.background = 'linear-gradient(135deg, var(--hero-color-start), var(--hero-color-end))';
+                nameTag.classList.add('right-aligned');
+            } else if (scene.speaker === 'Narration') {
+                nameTag.style.background = '#2d3436';
+            } else {
+                nameTag.style.background = 'linear-gradient(135deg, var(--primary), var(--accent))';
+            }
+
+            const dialogueText = document.getElementById('dialogue-text');
+            dialogueText.classList.remove('animate-text');
+            void dialogueText.offsetWidth; 
+            dialogueText.classList.add('animate-text');
+            
+            let formattedText = getText(scene.text);
+            formattedText = formattedText.replace(/(\([\u0E00-\u0E7F]+\))/g, '<span class="thai-word">$1</span>');
+            
+            if (scene.vocab) {
+                scene.vocab.forEach(v => {
+                    const regex = new RegExp(`(${v.fr}[sx]?)`, 'gi');
+                    formattedText = formattedText.replace(regex, '<span class="highlight-word">$1</span>');
+                });
+            }
+            dialogueText.innerHTML = formattedText;
+
+            // Gestion Choix
+            const dialPanel = document.getElementById('dialogue-panel');
+            if (scene.choices || scene.type === 'input') {
+                dialPanel.onclick = null; 
+                document.querySelector('.next-btn').style.display = 'none';
+                
+                const choiceScreen = document.getElementById('choice-screen');
+                choiceScreen.innerHTML = '';
+                choiceScreen.style.display = 'flex';
+
+                if (scene.type === 'input') {
+                    const input = document.createElement('input');
+                    input.type = 'text'; input.className = 'name-input'; input.placeholder = "Entrez votre prénom";
+                    const btn = document.createElement('button');
+                    btn.className = 'choice-btn'; btn.innerText = "Valider";
+                    btn.onclick = () => { if(input.value.trim()) { state.playerName = input.value.trim(); nextStep(); } };
+                    choiceScreen.appendChild(input); choiceScreen.appendChild(btn); input.focus();
+                } else if (scene.type === 'image') {
+                    const container = document.createElement('div'); container.className = 'cards-container';
+                    scene.choices.forEach(c => {
+                        const card = document.createElement('div'); card.className = 'img-card';
+                        card.innerHTML = `<img src="${c.img}"><div>${getText(c.text)}</div>`;
+                        card.onclick = () => makeChoice(c); container.appendChild(card);
+                    });
+                    choiceScreen.appendChild(container);
+                } else {
+                    scene.choices.forEach(c => {
+                        const btn = document.createElement('button'); btn.className = 'choice-btn';
+                        btn.innerText = getText(c.text); btn.onclick = () => makeChoice(c);
+                        choiceScreen.appendChild(btn);
+                    });
+                }
+            } else {
+                dialPanel.onclick = nextStep;
+                document.querySelector('.next-btn').style.display = 'flex';
+            }
+        }
+
+        function saveState() {
+            const stateClone = { currentId: state.currentId, affinity: { ...state.affinity }, route: state.route, playerName: state.playerName, currentLocation: state.currentLocation, vocabHistory: [...state.vocabHistory] };
+            historyStack.push(stateClone);
+            updateControls();
+        }
+        function goBack() {
+            if (historyStack.length === 0) return;
+            state = historyStack.pop();
+            updateControls();
+            renderScene();
+        }
+        function updateControls() {
+            const btn = document.getElementById('back-btn');
+            btn.style.display = (historyStack.length > 0) ? 'flex' : 'none';
+        }
+        function nextStep() {
+            const scene = script.find(s => s.id === state.currentId);
+            if (scene && scene.next) { saveState(); state.currentId = scene.next; renderScene(); }
+        }
+        function makeChoice(choice) {
+            saveState(); 
+            if (choice.affinity) { for (let char in choice.affinity) { if (state.affinity[char] !== undefined) state.affinity[char] += choice.affinity[char]; } }
+            if (choice.route) state.route = choice.route;
+            state.currentId = choice.next;
+            renderScene();
+        }
+        function showEnding() { /* ... (Identique aux versions précédentes) ... */ }
+
+        window.onload = renderScene;
+    </script>
+</body>
+</html>
