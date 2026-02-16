@@ -1,4 +1,4 @@
-
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -221,11 +221,11 @@
         .vocab-title {
             font-family: 'Pacifico', cursive;
             color: var(--primary);
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             text-align: center;
             font-size: 1.2rem;
             border-bottom: 1px solid rgba(0,0,0,0.1);
-            padding-bottom: 3px;
+            padding-bottom: 5px;
             flex-shrink: 0;
         }
 
@@ -387,11 +387,12 @@
     </div>
 
     <script>
-        // --- ASSETS ---
+        // --- ASSETS (Avec PROXY wsrv.nl pour corriger l'affichage sur GitHub) ---
         const images = {
             bg: {
                 hotel: 'https://cdnb.artstation.com/p/assets/images/images/024/966/621/large/bugra-hekimhan-11.jpg?1584114602',
-                room: 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/559465cb-2c06-4177-a5ce-dee4c6409ce6/dg8gg71-eed3499d-bd75-4bce-bce6-140f4053295e.png/v1/fill/w_1280,h_718,q_80,strp/hotel_room_2_vn_background_by_drechenaux_dg8gg71-fullview.jpg',
+                // Remplacement du lien Wix temporaire par un lien stable
+                room: 'https://wsrv.nl/?url=cdnb.artstation.com/p/assets/images/images/005/028/055/large/randy-vargas-vargas-hotelroom-night-02.jpg',
                 bath: 'https://img.stablecog.com/insecure/1920w/aHR0cHM6Ly9iLnN0YWJsZWNvZy5jb20vYzBiYmFkMWEtMzAyNC00MDhmLWFjMzAtNTFlNDQxMDQ5MmNmLmpwZWc.webp',
                 dinner: 'https://itadakimasuanime.wordpress.com/wp-content/uploads/2014/06/hiyashi-chuuka-garden-of-words.png',
                 guadeloupe: 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/45e4fd55-3826-47bc-92a9-056d32305a49/dkrmcnp-7092ad55-7e29-4f97-b6d7-1642e6b817c1.jpg/v1/fill/w_1920,h_1077,q_75,strp/anime_style_forest__bathed_in_ethereal_sunlight_by_infinitewallpaper_dkrmcnp-fullview.jpg',
@@ -416,23 +417,30 @@
                 gratin: 'https://img.over-blog-kiwi.com/0/55/20/99/20190923/ob_984727_christophines-en-gratin.JPG'
             },
             chars: {
-                AA: 'https://kprofiles.com/wp-content/uploads/2023/08/AAashirakorn-640x800.jpeg',
-                Heart: 'https://kprofiles.com/wp-content/uploads/2023/08/HEARTchuthiwat-640x800.jpeg',
-                Marckris: 'https://kprofiles.com/wp-content/uploads/2023/08/MARCKRIS-640x800.jpeg',
-                Jung: 'https://kprofiles.com/wp-content/uploads/2023/08/JUNGT-640x800.jpeg',
-                Thai: 'https://kprofiles.com/wp-content/uploads/2023/08/THAIchayanon-640x800.jpeg',
-                Nex: 'https://kprofiles.com/wp-content/uploads/2023/08/NEXnattakit-640x800.jpeg',
-                Peemwasu: 'https://kprofiles.com/wp-content/uploads/2023/08/PEEMWASU-1-640x800.jpeg',
-                Copper: 'https://kprofiles.com/wp-content/uploads/2023/08/COPPERdechawat-640x800.jpeg',
-                Alan: 'https://kprofiles.com/wp-content/uploads/2023/08/ALANpasawee-640x800.jpeg',
-                Khunpol: 'https://kprofiles.com/wp-content/uploads/2023/08/KHUNPOL-640x800.jpeg',
-                Jinwook: 'https://kprofiles.com/wp-content/uploads/2023/08/JINWOOKkim-640x800.jpeg',
-                Phutatchai: 'https://kprofiles.com/wp-content/uploads/2023/08/PHUTATCHAI-640x800.jpeg',
+                AA: 'https://wsrv.nl/?url=kprofiles.com/wp-content/uploads/2023/08/AAashirakorn-640x800.jpeg',
+                Heart: 'https://wsrv.nl/?url=kprofiles.com/wp-content/uploads/2023/08/HEARTchuthiwat-640x800.jpeg',
+                Marckris: 'https://wsrv.nl/?url=kprofiles.com/wp-content/uploads/2023/08/MARCKRIS-640x800.jpeg',
+                Jung: 'https://wsrv.nl/?url=kprofiles.com/wp-content/uploads/2023/08/JUNGT-640x800.jpeg',
+                Thai: 'https://wsrv.nl/?url=kprofiles.com/wp-content/uploads/2023/08/THAIchayanon-640x800.jpeg',
+                Nex: 'https://wsrv.nl/?url=kprofiles.com/wp-content/uploads/2023/08/NEXnattakit-640x800.jpeg',
+                Peemwasu: 'https://wsrv.nl/?url=kprofiles.com/wp-content/uploads/2023/08/PEEMWASU-1-640x800.jpeg',
+                Copper: 'https://wsrv.nl/?url=kprofiles.com/wp-content/uploads/2023/08/COPPERdechawat-640x800.jpeg',
+                Alan: 'https://wsrv.nl/?url=kprofiles.com/wp-content/uploads/2023/08/ALANpasawee-640x800.jpeg',
+                Khunpol: 'https://wsrv.nl/?url=kprofiles.com/wp-content/uploads/2023/08/KHUNPOL-640x800.jpeg',
+                Jinwook: 'https://wsrv.nl/?url=kprofiles.com/wp-content/uploads/2023/08/JINWOOKkim-640x800.jpeg',
+                Phutatchai: 'https://wsrv.nl/?url=kprofiles.com/wp-content/uploads/2023/08/PHUTATCHAI-640x800.jpeg',
                 Seraphin: 'https://placehold.co/300x600/2d3436/FFFFFF?text=Seraphin'
             }
         };
 
-        let state = { currentId: 'start', affinity: {}, route: null, playerName: "Séraphin", currentLocation: "Paris - Hôtel", vocabHistory: [] };
+        let state = { 
+            currentId: 'start', 
+            affinity: {}, 
+            route: null, 
+            playerName: "Séraphin", 
+            currentLocation: "Paris - Hôtel", 
+            vocabHistory: [] 
+        };
         let historyStack = [];
         Object.keys(images.chars).forEach(c => state.affinity[c] = 0);
 
@@ -489,7 +497,7 @@
             { id: 'a2_toilet', bg: images.bg.room, speaker: 'Séraphin', text: "Ah bon, vous voyagez demain ? C’est super ! Excusez-moi, où sont les toilettes ?", chars: [], next: 'a3_start' },
 
             // ACTE 3
-            { id: 'a3_start', bg: images.bg.bath, speaker: 'Narration', text: "Après toutes ces émotions, j'ai besoin d’aller aux toilettes. On m'indique la salle de bains. J'ouvre la porte, mais... oula ! Il y a beaucoup de vapeur et des rires derrière le rideau de douche. Je vois trois hommes en train de se doucher.", chars: [], location: "Paris - Salle de Bain", next: 'a3_1' },
+            { id: 'a3_start', bg: images.bg.bath, speaker: 'Narration', text: "Après toutes ces émotions, j'ai besoin d’aller aux toilettes. On m'indique la salle de bains. J'ouvre la porte, mais... oula ! Il y a beaucoup de vapeur et des rires derrière le rideau de douche. Je vois trois hommes en train de se doucher.", chars: [], location: "Paris - Salle de Bain", vocab: [], next: 'a3_1' },
             { id: 'a3_1', bg: images.bg.bath, speaker: 'Peemwasu', text: "(Voix joyeuse) Je vous assure, les gars ! L'eau glacée, c'est le secret des stars. C'est excellent pour la circulation et ça donne une peau très douce.", chars: ['Peemwasu', 'Copper', 'Nex'], next: 'a3_2' },
             { id: 'a3_2', bg: images.bg.bath, speaker: 'Copper', text: "(En grelottant) Tu es fou, Peemwasu ! C'est une torture ! Moi, j'adore l'eau très chaude. Ça détend tous les muscles après une journée de voyage.", chars: ['Peemwasu', 'Copper', 'Nex'], next: 'a3_3' },
             { id: 'a3_3', bg: images.bg.bath, speaker: 'Nex', text: "Calmez-vous ! Pourquoi choisir ? Moi, je commence par le chaud pour me relaxer, et je finis par le froid pour me réveiller. C'est l'équilibre parfait.", chars: ['Peemwasu', 'Copper', 'Nex'], next: 'a3_4' },
@@ -557,9 +565,9 @@
             { id: 'a5_5', bg: images.bg.room, speaker: 'Jung', text: "Oh, donc trois personnes vont dormir dans le même lit.", chars: ['Jung', 'AA'], next: 'a5_6' },
             { id: 'a5_6', bg: images.bg.room, speaker: 'AA', text: "Séraphin, puisque tu es notre invité spécial, avec qui veux-tu partager ton lit ?", chars: ['AA'], next: 'a5_choice' },
             { id: 'a5_choice', bg: images.bg.room, speaker: 'Séraphin', text: "Avec qui dormir ?", chars: [], choices: [ { text: "Dormir avec Alan et Marckris (Ambiance aventurière)", affinity: { Alan: 1, Marckris: 1 }, next: 'a5_end' }, { text: "Dormir avec Khunpol et Heart (Ambiance calme et sérieuse)", affinity: { Khunpol: 1, Heart: 1 }, next: 'a5_end' }, { text: "Dormir avec Jinwook et Thai (Ambiance relax et rigolote)", affinity: { Jinwook: 1, Thai: 1 }, next: 'a5_end' }, { text: "Dormir avec Nex et Phutatchai (Ambiance élégante et mystérieuse)", affinity: { Nex: 1, Phutatchai: 1 }, next: 'a5_end' }, { text: "Dormir avec Copper et AA (Ambiance dynamique et joyeuse)", affinity: { Copper: 1, AA: 1 }, next: 'a5_end' }, { text: "Dormir avec Jung et Peemwasu (Ambiance douce et cocooning)", affinity: { Jung: 1, Peemwasu: 1 }, next: 'a5_end' } ] },
-            { id: 'a5_end', bg: images.bg.room, speaker: 'Narration', text: "Je m'installe dans le lit choisi. On discute encore un peu à voix basse dans le noir. On parle de nos rêves (ความฝัน), de nos peurs... Je sens que je commence à m'attacher à eux. La nuit est douce à Paris.", chars: [], next: 'a6_start' },
+            { id: 'a5_end', bg: images.bg.room, speaker: 'Narration', text: "Je m'installe dans le lit choisi. On discute encore un peu à voix basse dans le noir. On parle de nos rêves (ความฝัน), de nos peurs... Je sens que je commence à m'attacher à eux. La nuit est douce à Paris.", chars: [], vocab: [{fr: "Rêve", label: "Le rêve", th: "ความฝัน"}], next: 'a6_start' },
 
-            // ACTE 6
+            // ACTE 6 (Intégral)
             { id: 'a6_start', bg: images.bg.room, speaker: 'Narration', text: "Le lendemain matin, le réveil (นาฬิกาปลุก) sonne à 7h00. C'est difficile. Il y a de la lumière sous les rideaux. J'entends du bruit dans la chambre. C'est l'effervescence !", chars: [], next: 'a6_1' },
             { id: 'a6_1', bg: images.bg.room, speaker: 'Thai', text: "(En s'étirant les bras) Ouh là là... J'ai mal au dos. Ce lit était trop mou pour moi.", chars: ['Thai'], next: 'a6_2' },
             { id: 'a6_2', bg: images.bg.room, speaker: 'Alan', text: "Allez, debout ! Il est l'heure. On a une longue journée aujourd'hui.", chars: ['Alan', 'Thai'], next: 'a6_3' },
