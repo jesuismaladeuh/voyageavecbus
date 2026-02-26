@@ -159,7 +159,7 @@
             display: flex;
             justify-content: center;
             align-items: flex-end; 
-            gap: 10px;
+            gap: 40px; 
             width: 100%;
             height: 100%;
         }
@@ -328,11 +328,19 @@
         @keyframes fadeInUp { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
         @media (max-width: 768px) {
-            .col-left { flex: 0 0 15%; padding-top: 10px; }
-            .col-center { flex: 0 0 85%; align-items: flex-end; padding-bottom: 5px; }
-            .col-right { display: none; }
+            .col-left { flex: 0 0 10%; padding-top: 10px; }
+            .col-center { flex: 0 0 50%; align-items: flex-end; padding-bottom: 5px; }
+            /* Le mémo ne disparaît plus sur petit écran, il s'adapte ! */
+            .col-right { display: flex; flex: 0 0 40%; padding-top: 10px; padding-right: 10px; gap: 5px; }
+            .info-wrapper { max-width: 100%; gap: 5px; }
+            .vocab-box { min-height: 160px; padding: 8px; }
+            .vocab-title { font-size: 1rem; margin-bottom: 3px; }
+            .vocab-item { padding: 1px 0; }
+            .vocab-word, .vocab-thai { font-size: 0.75rem; }
+            .location-box { font-size: 0.85rem; padding: 6px; }
             .dialogue-box { width: 98%; height: 98%; }
             .text-content { font-size: 1.1rem; padding: 20px; }
+            .char-sprite, .dish-sprite { max-width: 45%; }
         }
     </style>
 </head>
@@ -398,7 +406,7 @@
                 room: 'https://i.postimg.cc/vZzWtCLx/hotel-room-2-vn-background-by-drechenaux-dg8gg71-pre.jpg',
                 bath: 'https://img.stablecog.com/insecure/1920w/aHR0cHM6Ly9iLnN0YWJsZWNvZy5jb20vYzBiYmFkMWEtMzAyNC00MDhmLWFjMzAtNTFlNDQxMDQ5MmNmLmpwZWc.webp',
                 dinner: 'https://itadakimasuanime.wordpress.com/wp-content/uploads/2014/06/hiyashi-chuuka-garden-of-words.png',
-                guadeloupe: 'https://images-wixmp-ed30a86b8c4ca887773594c2.wixmp.com/f/45e4fd55-3826-47bc-92a9-056d32305a49/dkrmcnp-7092ad55-7e29-4f97-b6d7-1642e6b817c1.jpg/v1/fill/w_1920,h_1077,q_75,strp/anime_style_forest__bathed_in_ethereal_sunlight_by_infinitewallpaper_dkrmcnp-fullview.jpg',
+                guadeloupe: 'https://static.vecteezy.com/system/resources/thumbnails/046/611/863/small_2x/sun-rays-through-the-forest-japanese-anime-illustration-painting-style-free-video.jpg',
                 stpierre: 'https://images2.alphacoders.com/108/thumb-1920-1083131.jpg',
                 tahiti: 'https://image.lexica.art/full_webp/d0d8f048-c687-4024-aee1-a03c1ec1f498',
                 pool: 'https://5.imimg.com/data5/SELLER/Default/2023/12/372469876/BB/MK/JF/1036556/swimming-pool-design.jpg',
@@ -510,7 +518,7 @@
             { id: 'a3_7', bg: images.bg.bath, speaker: 'Peemwasu', text: "(Sortant la tête de la douche) Mais non, reste ! On a presque fini. On discute juste de nos rituels de beauté.", chars: ['Peemwasu', 'Nex'], next: 'a3_8' },
             { id: 'a3_8', bg: images.bg.bath, speaker: 'Nex', text: "Ne sois pas timide, Séraphin. La salle de bains est immense. Tu veux te joindre à nous pour finir la douche ? On a encore plein de savon (สบู่) !", chars: ['Peemwasu', 'Nex', 'Copper'], next: 'a3_9' },
             { id: 'a3_9', bg: images.bg.bath, speaker: 'Copper', text: "Faut pas être timide, on prend toujours la douche (ฝักบัว) ensemble !", chars: ['Peemwasu', 'Nex', 'Copper'], next: 'a3_choice' },
-            { id: 'a3_choice', bg: images.bg.bath, speaker: 'Séraphin', text: "...", chars: ['Peemwasu', 'Nex', 'Copper'], choices: [ { text: "C'est gentil, mais je vais attendre que vous sortiez... (Prudent)", next: 'a3_refusal' }, { text: "D'accord, l'eau chaude me fera du bien après ce voyage.", affinity: { Nex: 1, Copper: 1 }, next: 'a3_accept_hot' }, { text: "Allez, d'accord ! Je veux essayer l'eau froide avec vous !", affinity: { Peemwasu: 1 }, next: 'a3_accept_cold' } ] },
+            { id: 'a3_choice', bg: images.bg.bath, speaker: 'Séraphin', text: "...", chars: ['Peemwasu', 'Nex', 'Copper'], choices: [ { text: "C'est gentil, mais je vais attendre que vous sortiez...", next: 'a3_refusal' }, { text: "D'accord, l'eau chaude me fera du bien après ce voyage.", affinity: { Nex: 1, Copper: 1 }, next: 'a3_accept_hot' }, { text: "Allez, d'accord ! Je veux essayer l'eau froide avec vous !", affinity: { Peemwasu: 1 }, next: 'a3_accept_cold' } ] },
             { id: 'a3_refusal', bg: images.bg.bath, speaker: 'Séraphin', text: "Je préfère vous laisser... Je vous retrouve au dîner !", chars: [], next: 'a4_start' },
             { id: 'a3_accept_hot', bg: images.bg.bath, speaker: 'Séraphin', text: "L'eau chaude, c'est tentant...", chars: ['Peemwasu', 'Nex', 'Copper'], next: 'a3_discussion' },
             { id: 'a3_accept_cold', bg: images.bg.bath, speaker: 'Séraphin', text: "Soyons fous, l'eau froide !", chars: ['Peemwasu', 'Nex', 'Copper'], next: 'a3_discussion' },
@@ -567,8 +575,8 @@
             { id: 'a5_4', bg: images.bg.room, speaker: 'Peemwasu', text: "Oui, mais il n’y a que six lits doubles…", chars: ['Peemwasu', 'Jung'], next: 'a5_5' },
             { id: 'a5_5', bg: images.bg.room, speaker: 'Jung', text: "Oh, donc trois personnes vont dormir dans le même lit.", chars: ['Jung', 'AA'], next: 'a5_6' },
             { id: 'a5_6', bg: images.bg.room, speaker: 'AA', text: "Séraphin, puisque tu es notre invité spécial, avec qui veux-tu partager ton lit ?", chars: ['AA'], next: 'a5_choice' },
-            { id: 'a5_choice', bg: images.bg.room, speaker: 'Séraphin', text: "Avec qui dormir ?", chars: [], choices: [ { text: "Dormir avec Alan et Marckris (Ambiance aventurière)", affinity: { Alan: 1, Marckris: 1 }, next: 'a5_end' }, { text: "Dormir avec Khunpol et Heart (Ambiance calme et sérieuse)", affinity: { Khunpol: 1, Heart: 1 }, next: 'a5_end' }, { text: "Dormir avec Jinwook et Thai (Ambiance relax et rigolote)", affinity: { Jinwook: 1, Thai: 1 }, next: 'a5_end' }, { text: "Dormir avec Nex et Phutatchai (Ambiance élégante et mystérieuse)", affinity: { Nex: 1, Phutatchai: 1 }, next: 'a5_end' }, { text: "Dormir avec Copper et AA (Ambiance dynamique et joyeuse)", affinity: { Copper: 1, AA: 1 }, next: 'a5_end' }, { text: "Dormir avec Jung et Peemwasu (Ambiance douce et cocooning)", affinity: { Jung: 1, Peemwasu: 1 }, next: 'a5_end' } ] },
-            { id: 'a5_end', bg: images.bg.room, speaker: 'Narration', text: "Je m'installe dans le lit choisi. On discute encore un peu à voix basse dans le noir. On parle de nos rêves (ความฝัน), de nos peurs... Je sens que je commence à m'attacher à eux. La nuit est douce à Paris.", chars: [], next: 'a6_start' },
+            { id: 'a5_choice', bg: images.bg.room, speaker: 'Séraphin', text: "Avec qui dormir ?", chars: [], choices: [ { text: "Dormir avec Alan et Marckris", affinity: { Alan: 1, Marckris: 1 }, next: 'a5_end' }, { text: "Dormir avec Khunpol et Heart", affinity: { Khunpol: 1, Heart: 1 }, next: 'a5_end' }, { text: "Dormir avec Jinwook et Thai", affinity: { Jinwook: 1, Thai: 1 }, next: 'a5_end' }, { text: "Dormir avec Nex et Phutatchai", affinity: { Nex: 1, Phutatchai: 1 }, next: 'a5_end' }, { text: "Dormir avec Copper et AA", affinity: { Copper: 1, AA: 1 }, next: 'a5_end' }, { text: "Dormir avec Jung et Peemwasu", affinity: { Jung: 1, Peemwasu: 1 }, next: 'a5_end' } ] },
+            { id: 'a5_end', bg: images.bg.room, speaker: 'Narration', text: "Je m'installe dans le lit choisi. On discute encore un peu à voix basse dans le noir. On parle de nos rêves (ความฝัน), de nos peurs... Je sens que je commence à m'attacher à eux. La nuit est douce à Paris.", chars: [], vocab: [{fr: "Rêve", label: "Le rêve", th: "ความฝัน"}], next: 'a6_start' },
 
             // ACTE 6 (Intégral)
             { id: 'a6_start', bg: images.bg.room, speaker: 'Narration', text: "Le lendemain matin, le réveil (นาฬิกาปลุก) sonne à 7h00. C'est difficile. Il y a de la lumière sous les rideaux. J'entends du bruit dans la chambre. C'est l'effervescence !", chars: [], next: 'a6_1' },
@@ -657,11 +665,11 @@
             
             // CHOIX FINAL A
             { id: 'rA_final_choice', bg: images.bg.guadeloupe, speaker: 'Séraphin', text: "Mon choix est...", chars: [], choices: [
-                { text: "Je n'ai vraiment pas aimé ce voyage, désolé... (fin célibataire)", affinity: {}, next: 'end_single' },
-                { text: "Je reste pour l'énergie et la joie de vivre ici. (+1 Marckris)", affinity: { Marckris: 1 }, next: 'end_A_marckris' },
-                { text: "Je reste pour le calme et la musique de l'île. (+1 Nex)", affinity: { Nex: 1 }, next: 'end_A_nex' },
-                { text: "Je reste pour la sécurité. (+1 Khunpol)", affinity: { Khunpol: 1 }, next: 'end_A_khunpol' },
-                { text: "Je reste pour le sport ! (+1 Jinwook)", affinity: { Jinwook: 1 }, next: 'end_A_jinwook' }
+                { text: "Je n'ai vraiment pas aimé ce voyage, désolé...", affinity: {}, next: 'end_single' },
+                { text: "Je reste pour l'énergie et la joie de vivre ici.", affinity: { Marckris: 1 }, next: 'end_A_marckris' },
+                { text: "Je reste pour le calme et la musique de l'île.", affinity: { Nex: 1 }, next: 'end_A_nex' },
+                { text: "Je reste pour la sécurité.", affinity: { Khunpol: 1 }, next: 'end_A_khunpol' },
+                { text: "Je reste pour le sport !", affinity: { Jinwook: 1 }, next: 'end_A_jinwook' }
             ]},
 
             // === ROUTE B ===
@@ -704,11 +712,11 @@
 
             // CHOIX FINAL B
             { id: 'rB_final_choice', bg: images.bg.stpierre, speaker: 'Séraphin', text: "Je décide de...", chars: [], choices: [
-                { text: "Je rentre, il fait trop froid. (Fin célibataire)", affinity: {}, next: 'end_single' },
-                { text: "Je reste pour la poésie. (+1 Jung)", affinity: { Jung: 1 }, next: 'end_B_jung' },
-                { text: "Je reste pour prendre soin de nous. (+1 Peemwasu)", affinity: { Peemwasu: 1 }, next: 'end_B_peemwasu' },
-                { text: "Je reste pour la chaleur du foyer. (+1 Heart)", affinity: { Heart: 1 }, next: 'end_B_heart' },
-                { text: "Je reste pour l'aventure ! (+1 AA)", affinity: { AA: 1 }, next: 'end_B_aa' }
+                { text: "Je rentre, il fait trop froid.", affinity: {}, next: 'end_single' },
+                { text: "Je reste pour la poésie.", affinity: { Jung: 1 }, next: 'end_B_jung' },
+                { text: "Je reste pour prendre soin de nous.", affinity: { Peemwasu: 1 }, next: 'end_B_peemwasu' },
+                { text: "Je reste pour la chaleur du foyer.", affinity: { Heart: 1 }, next: 'end_B_heart' },
+                { text: "Je reste pour l'aventure !", affinity: { AA: 1 }, next: 'end_B_aa' }
             ]},
 
             // === ROUTE C : TAHITI ===
@@ -744,11 +752,11 @@
 
             // CHOIX FINAL C
             { id: 'rC_final_choice', bg: images.bg.tahiti, speaker: 'Séraphin', text: "Je décide de...", chars: [], choices: [
-                { text: "Je n'ai vraiment pas aimé ce voyage, désolé... (fin célibataire)", affinity: {}, next: 'end_single' },
-                { text: "Je veux rester, car j'aime le calme. (+1 Thai)", affinity: { Thai: 1 }, next: 'end_C_thai' },
-                { text: "Je veux rester, car j'aime la fête ! (+1 Cooper)", affinity: { Copper: 1 }, next: 'end_C_copper' },
-                { text: "Je veux rester, car j'aime la nature. (+1 Phutatchai)", affinity: { Phutatchai: 1 }, next: 'end_C_phutatchai' },
-                { text: "Je veux rester, car j'aime la bonne cuisine. (+1 Alan)", affinity: { Alan: 1 }, next: 'end_C_alan' }
+                { text: "Je n'ai vraiment pas aimé ce voyage, désolé...", affinity: {}, next: 'end_single' },
+                { text: "Je veux rester, car j'aime le calme.", affinity: { Thai: 1 }, next: 'end_C_thai' },
+                { text: "Je veux rester, car j'aime la fête !", affinity: { Copper: 1 }, next: 'end_C_copper' },
+                { text: "Je veux rester, car j'aime la nature.", affinity: { Phutatchai: 1 }, next: 'end_C_phutatchai' },
+                { text: "Je veux rester, car j'aime la bonne cuisine.", affinity: { Alan: 1 }, next: 'end_C_alan' }
             ]},
 
             // FINS (Le reste est identique au script précédent...)
@@ -826,6 +834,10 @@
             }
 
             document.getElementById('location-display').innerText = "📍 " + state.currentLocation;
+
+            // Sécurité : S'assurer que le mémo est toujours visible, même après un retour en arrière depuis la fin
+            document.getElementById('location-display').style.display = 'block';
+            document.getElementById('vocab-display').style.display = 'flex';
 
             // GESTION FOND (Optimisée)
             const bgLayer = document.getElementById('bg');
@@ -981,14 +993,105 @@
             const scene = script.find(s => s.id === state.currentId);
             if (scene && scene.next) { saveState(); state.currentId = scene.next; renderScene(); }
         }
+
         function makeChoice(choice) {
             saveState(); 
-            if (choice.affinity) { for (let char in choice.affinity) { if (state.affinity[char] !== undefined) state.affinity[char] += choice.affinity[char]; } }
+            if (choice.affinity) {
+                for (let char in choice.affinity) {
+                    if (state.affinity[char] !== undefined) state.affinity[char] += choice.affinity[char];
+                }
+            }
             if (choice.route) state.route = choice.route;
-            state.currentId = choice.next;
+            
+            // LOGIQUE DE FIN
+            if (choice.next.startsWith('end_') && choice.next !== 'end_single') {
+                let candidates = [];
+                if (state.route === 'A') candidates = ['Marckris', 'Nex', 'Khunpol', 'Jinwook'];
+                else if (state.route === 'B') candidates = ['Jung', 'Peemwasu', 'Heart', 'AA'];
+                else if (state.route === 'C') candidates = ['Thai', 'Copper', 'Phutatchai', 'Alan'];
+                else candidates = Object.keys(state.affinity);
+
+                let winner = candidates.reduce((best, current) => 
+                    (state.affinity[current] > state.affinity[best]) ? current : best
+                , candidates[0]);
+                
+                let prefix = "";
+                if (state.route === 'A') prefix = "end_A_";
+                else if (state.route === 'B') prefix = "end_B_";
+                else if (state.route === 'C') prefix = "end_C_";
+                
+                let targetId = prefix + winner.toLowerCase();
+                
+                if (script.find(s => s.id === targetId)) {
+                    state.currentId = targetId;
+                } else {
+                    state.currentId = choice.next;
+                }
+            } else {
+                state.currentId = choice.next;
+            }
+            
             renderScene();
         }
-        function showEnding() { /* ... (Identique aux versions précédentes) ... */ }
+
+        function showEnding() {
+            let candidates = Object.keys(state.affinity);
+            let winner = candidates.reduce((best, current) => 
+                (state.affinity[current] > state.affinity[best]) ? current : best
+            , candidates[0]);
+
+            let isSingle = (state.currentId === 'end_single' || state.currentId === 'end_single_2');
+            let finalText = "";
+            
+            const endings = {
+                Marckris: "Vous restez en Guadeloupe pour cultiver des fruits exotiques et ouvrir un bar à jus sur la plage.",
+                Nex: "Vous partez faire un tour du monde pour découvrir d'autres volcans et jouer de la musique.",
+                Khunpol: "Vous ouvrez un gîte de montagne écologique pour les randonneurs.",
+                Jinwook: "Vous devenez animateurs sportifs et organisez des marathons sur la plage.",
+                Jung: "Vous restez dans le chalet isolé pour écrire des livres et des poèmes ensemble.",
+                Peemwasu: "Vous créez une marque de cosmétiques naturels à base de plantes nordiques.",
+                Heart: "Vous ouvrez une boulangerie traditionnelle française sur l'île.",
+                AA: "Vous devenez photographes de l'extrême et voyagez dans les pays froids.",
+                Thai: "Vous achetez un voilier et voyagez d'île en île en vivant de la pêche.",
+                Copper: "Vous devenez danseurs professionnels et ouvrez une école de danse sur la plage.",
+                Phutatchai: "Vous travaillez pour une association qui protège les tortues marines et l'environnement.",
+                Alan: "Vous écrivez un livre de recettes polynésiennes."
+            };
+
+            if (isSingle) {
+                finalText = `${state.playerName} rentre seul en France. FIN. จบ บายๆ Au revoir BUS !`;
+            } else {
+                finalText = `Félicitations ! ${state.playerName} se marie avec ${winner}.\n${endings[winner]}`;
+            }
+
+            document.getElementById('choice-screen').style.display = 'none';
+            document.getElementById('chars').innerHTML = '';
+            
+            if (!isSingle) {
+                const winnerImg = document.createElement('img');
+                winnerImg.src = images.chars[winner];
+                winnerImg.className = 'char-sprite active speaking';
+                document.getElementById('chars').appendChild(winnerImg);
+            } else {
+                const heroImg = document.createElement('img');
+                heroImg.src = images.chars['Seraphin'];
+                heroImg.className = 'char-sprite active speaking';
+                document.getElementById('chars').appendChild(heroImg);
+            }
+
+            document.getElementById('dialogue-panel').style.display = 'flex';
+            document.getElementById('dialogue-panel').onclick = null;
+            document.querySelector('.next-btn').style.display = 'none';
+            document.getElementById('location-display').style.display = 'none'; 
+            document.getElementById('vocab-display').style.display = 'none';
+
+            document.getElementById('name-tag').innerText = "FIN DU VOYAGE";
+            document.getElementById('name-tag').style.background = "gold";
+            document.getElementById('name-tag').style.color = "black";
+
+            document.getElementById('dialogue-text').innerText = finalText;
+            document.getElementById('back-btn').style.display = 'none';
+        }
 
         window.onload = renderScene;
     </script>
